@@ -42,32 +42,30 @@ int performShiftCipher(char* text, int k) {
         } else if ('A' <= currentChar && currentChar <= 'Z') {
             minASCII = 'A';
             maxASCII = 'Z';
-        } else {
-            goto increment;
-        }
+        } else goto increment;
 
         // check for positive or negative k
         if (k > 0) {
             // check for wrapping
             if (currentChar + k > maxASCII) { 
                 int range = maxASCII - minASCII + 1; // takes range # of shifts to get back to currentChar
-                // int excessShift = currentChar + k - maxASCII; // # of shifts from maxASCII
-                // int lastWrap = excessShift % range - 1;
-                int excessShift = currentChar + k - maxASCII - 1; // # of shifts from maxASCII
-                int lastWrap = excessShift % range;
-                text[i] = minASCII + lastWrap;
-            } else {
-                text[i] += k;
-            }
+                int excessShift = k % range; // excessShift < range
+                if (currentChar + excessShift > maxASCII) {
+                    // text[i] = minASCII + (currentChar + excessShift - maxASCII); // works for most letters
+                    int lastWrap = currentChar + excessShift - maxASCII; // # of shifts past maxASCII, 1 means wrap to minASCII
+                    text[i] = minASCII + lastWrap - 1; // works for all letters and numbers
+                } else text[i] += excessShift;
+            } else text[i] += k;
         } else if (k < 0) {
-            if (currentChar - k < minASCII) {
+            if (currentChar + k < minASCII) {
                 int range = maxASCII - minASCII + 1;
-                int excessShift = minASCII - (currentChar + k);
-                int lastWrap = excessShift % range - 1;
-                text[i] = maxASCII - lastWrap;
-            } else {
-                text[i] += k;
-            }
+                int excessShift = k % range; // excessShift < range in magnitude and excessShift <= 0
+                if (currentChar + excessShift < minASCII) {
+                    // text[i] = maxASCII - (minASCII - (currentChar + excessShift)); // works for most letters
+                    int lastWrap = minASCII - (currentChar + excessShift); // # of shifts past minASCII, 1 means wrap to maxASCII
+                    text[i] = maxASCII - lastWrap + 1; // works for all letters and numbers
+                } else text[i] += excessShift;
+            } else text[i] += k;
         } // else k == 0, do nothing
 
         increment:
