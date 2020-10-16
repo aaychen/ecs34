@@ -18,7 +18,4 @@ int main()
     printf("str2=%s, retval=%d\n", str2, retval ? 1 : 0);
     retval = performShiftCipher(str2, -9);
     printf("str2=%s, retval=%d\n", str2, retval ? 1 : 0);
-    // char str[] = "5";
-    // int retval = performShiftCipher(str, 9);
-    // printf("str=%s, retval=%d\n", str, retval ? 1 : 0);
 }
