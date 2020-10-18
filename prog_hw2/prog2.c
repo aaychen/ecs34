@@ -21,11 +21,12 @@ void replaceIfHigher(long* arr, unsigned len) {
 
 int performShiftCipher(char* text, int k) {
     if (!text || !(-500 <= k && k <= 500)) return 0;
-    // loop until null terminator reached
-    int i = 0;
-    char currentChar = text[i];
-    int minASCII = '0', maxASCII = '0';
-    while (currentChar != '\0') {
+    int textLen = strLen(text);
+    char currentChar;
+    int minASCII, maxASCII;
+    // iterate over each char in text
+    for (int i = 0; i < textLen; i++) {
+        currentChar = text[i];
         // check if item is a number, lowercase letter, or uppercase letter using ASCII values
         if ('0' <= currentChar && currentChar <= '9') {
             minASCII = '0';
@@ -36,43 +37,37 @@ int performShiftCipher(char* text, int k) {
         } else if ('A' <= currentChar && currentChar <= 'Z') {
             minASCII = 'A';
             maxASCII = 'Z';
-        } else goto nextChar;
+        } else continue;
 
         int range = maxASCII - minASCII + 1;
         int numShift = k % range;
         int shiftASCII = currentChar + numShift;
-        // Check for positive or negative k
+        // check for positive or negative k
         if (k > 0) {
-            // Check for wrapping
+            // check for wrapping
             if (shiftASCII > maxASCII) {
                 int lastWrap = shiftASCII - maxASCII; // # of shifts past maxASCII, 1 means wrap to minASCII
                 text[i] = minASCII + lastWrap - 1;
-
             } else text[i] += numShift;
         } else if (k < 0) {
             if (shiftASCII < minASCII) {
-                int lastWrap = minASCII - shiftASCII; // # of shifts past minASCII, 1 means wrap to maxASCII
+                int lastWrap = minASCII - shiftASCII;
                 text[i] = maxASCII - lastWrap + 1; 
             } else text[i] += numShift;
         } // else k == 0, do nothing
-
-        nextChar:
-        currentChar = text[++i];
     }
     return 1;
 }
 
 char* strrstr(char* haystack, char* needle) {
-    int lenHaystack = strLen(haystack);
-    int lenNeedle = strLen(needle);
-    int needleIndex = lenNeedle - 1;
+    int haystackLen = strLen(haystack);
+    int needleLen = strLen(needle);
+    int needleIndex = needleLen - 1;
     // iterate through haystack backwards and compare chars with needle
-    for (int i = lenHaystack - 1; i >= 0; i--) {
-        // if charHaystack == charNeedle, decrement needleIndex
-        // if charHaystack != charNeedle, reset needleIndex
-        needleIndex = (haystack[i] == needle[needleIndex]) ? (needleIndex - 1) : (lenNeedle - 1);
-        // if needleIndex == -1, return a pointer to wherever i is in haystack
-        if (needleIndex == -1) {
+    for (int i = haystackLen - 1; i >= 0; i--) {
+        // if charHaystack == charNeedle, needleIndex--; else reset needleIndex
+        needleIndex = (haystack[i] == needle[needleIndex]) ? (needleIndex - 1) : (needleLen - 1);
+        if (needleIndex == -1) { // needle found
             return &haystack[i];
         }
     }
@@ -83,7 +78,7 @@ int eachContains(char** strings, char target, unsigned numStrings, char** firstO
     char strTarget[] = {target, '\0'}; // turn target into a string to use strrstr() function
     // iterate over each item in strings
     for (int i = 0; i < numStrings; i++) {
-        if (strrstr(strings[i], strTarget) == NULL) { // no null terminator for target
+        if (strrstr(strings[i], strTarget) == NULL) {
             *firstOffending = strings[i];
             return 0;
         }
@@ -91,6 +86,9 @@ int eachContains(char** strings, char target, unsigned numStrings, char** firstO
     return 1;
 }
 
+/**
+ * Returns length of seq.
+ */
 int strLen(char* seq) {
     if (!seq) return 0;
     int i = 0;
