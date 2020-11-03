@@ -1,0 +1,11 @@
+Jake Jacobs
+4
+ECS 36B
+PHY 9A
+ECS 20
+MAT 21C
+
+3
+ECS 36A
+MAT 21B
+MAT 21A
