@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <limits.h>
-// #include <stdbool.h>
-// #include <ctype.h>
+#include <limits.h>
+
+// check memory leaks with valgrind on CSIF
 
 int parseForHighest(const char* filename, int* highest) {
     if (!filename || !highest) return -1;
@@ -70,36 +70,46 @@ int* getAllHigherThan(const int* arr, unsigned arrlen, int threshold, unsigned* 
     }
     *newArrlen = count;
     return resArr;
-
-    // check memory leaks with valgrind on CSIF
 }
 
 char* strtok_c(const char* str, const char* delim) {
-    // static variables will only be defined once
-    static char strToSearch[100];
-    memset(strToSearch, '\0', 100);
-    strcpy(strToSearch, str);
-    // static char* strPtr = strToSearch;
-    // WILL NEED TO FIX DEFINING LATER; WHAT IF WANT TO SEARCH NEW STRING
-
-    // if first call has str as NULL or no more to search
-    if (!strlen(strToSearch)) {
+    static char strToSearch[INT_MAX] = "";
+    static const char* searchPtr = NULL;
+    if (str) {
+        strcpy(strToSearch, str);
+        searchPtr = &strToSearch[0];
+    }
+    if (!searchPtr || !strlen(searchPtr)) { // if first call has str as NULL or no more to search
         return NULL;
     }
-    if (!str) {
-        strcpy(strToSearch, str);
-        // strPtr = strToSearch;
+    int tempIndex = 0;
+    int isStart = 1; // flag for finding non-delimiter to start at
+    char* tempTok = calloc(strlen(searchPtr) + 1, sizeof(char));
+    while (searchPtr[0]) {
+        for (int i = 0; i < strlen(delim); i++) {
+            if (searchPtr[0] == delim[i]) {
+                if (isStart) {
+                    searchPtr++;
+                    goto nextChar;
+                }
+                searchPtr++;
+                goto exitLoop;
+            }
+        }
+        if (isStart) isStart = 0;
+        tempTok[tempIndex++] = searchPtr[0];
+        searchPtr++;
+        nextChar: ;
     }
-    char* temp = strtok(strToSearch, delim);
-    char* token = malloc(strlen(temp) * sizeof(char));
-    strcpy(token, temp);
-
-
-    // if not first time, tokenize from where left off
-    // if no more tokens, return NULL
-    // return a copy of the token (NOT where it is in str)
-    // only thing to malloc is the copy of the token
-    return token;
+    exitLoop:
+    if (!strlen(tempTok)) {
+        free(tempTok);
+        return NULL;
+    }
+    char* tok = calloc((strlen(tempTok) + 1), sizeof(char));
+    strcpy(tok, tempTok);
+    free(tempTok);
+    return tok;
 }
 
 struct Student* loadStudent(const char* studentFilename) {
@@ -123,7 +133,7 @@ struct Student* loadStudent(const char* studentFilename) {
                 strcpy(studentPtr->currCourses[i], buf);
             }
         }
-        else if (i == 3) {} // blank line
+        // else if (i == 3) {} // blank line
         else if (i == 4) {
             studentPtr->numPrevCourses = atoi(buf);
             studentPtr->prevCourses = malloc(studentPtr->numPrevCourses * sizeof(char*));
