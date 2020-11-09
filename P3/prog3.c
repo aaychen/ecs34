@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Assume file contains 1 integer per line
 int parseForHighest(const char* filename, int* highest) {
     if (!filename || !highest) return -1;
     FILE* fp = fopen(filename, "r"); // create file pointer
@@ -29,23 +30,15 @@ int* getAllHigherThan(const int* arr, unsigned arrlen, int threshold, unsigned* 
     int arrSize = 1;
     int* resArr = malloc(arrSize * sizeof(int));
     int count = 0;
-    for (int i = 0; i < arrlen; i++) {
+    // iterate through arr backwards and store into resArr
+    for (int i = arrlen-1; i >= 0; i--) {
         int temp = arr[i];
-        if (temp > threshold) {
-            resArr[count] = temp;
-            count++;
-        }
+        if (temp > threshold)
+            resArr[count++] = temp;
         if (count == arrSize) { // need to resize and allocate more space
             arrSize *= 2;
             resArr = realloc(resArr, arrSize * sizeof(int)); // realloc preserves memory
         }
-    }
-    resArr = realloc(resArr, count * sizeof(int)); // decrease size if needed down to count items
-    // reverse array in place: swap first and last characters then move inwards
-    for (int i = 0, j = count-1; i < j; i++, j--) {
-        int temp = resArr[i];
-        resArr[i] = resArr[j];
-        resArr[j] = temp;
     }
     *newArrlen = count;
     return resArr;
@@ -60,9 +53,6 @@ char* strtok_c(const char* str, const char* delim) {
         currIndex = 0;
         searchPtr = &str[currIndex];
     }
-    // if (!searchPtr || !strlen(searchPtr)) { // if first call has str as NULL or no more to search
-    //     return NULL;
-    // }
     if (currIndex >= maxLen) {
         return NULL;
     }
@@ -110,8 +100,6 @@ struct Student* loadStudent(const char* studentFilename) {
             studentPtr->currCourses = malloc(studentPtr->numCurrCourses * sizeof(char*));
             for (int i = 0; i < studentPtr->numCurrCourses; i++) {
                 fgets(buf, MAX_LINE_LEN, fp);
-                // studentPtr->currCourses[i] = malloc((strlen(buf) + 1) * sizeof(char));
-                // strcpy(studentPtr->currCourses[i], buf);
                 studentPtr->currCourses[i] = calloc(strlen(buf), sizeof(char)); // zero value for char type is null byte
                 strncpy(studentPtr->currCourses[i], buf, strlen(buf)-1); // ignore newline character in name line read
             }
@@ -122,8 +110,6 @@ struct Student* loadStudent(const char* studentFilename) {
             studentPtr->prevCourses = malloc(studentPtr->numPrevCourses * sizeof(char*));
             for (int i = 0; i < studentPtr->numPrevCourses; i++) {
                 fgets(buf, MAX_LINE_LEN, fp);
-                // studentPtr->prevCourses[i] = malloc(strlen(buf + 1) * sizeof(char));
-                // strcpy(studentPtr->prevCourses[i], buf);
                 studentPtr->prevCourses[i] = calloc(strlen(buf), sizeof(char)); // zero value for char type is null byte
                 strncpy(studentPtr->prevCourses[i], buf, strlen(buf)-1); // ignore newline character in name line read
             }
@@ -148,20 +134,23 @@ void printStudent(const struct Student* s) {
 }
 
 void freeStudent(struct Student** s) {
-    for(int i = 0; i < (*s)->numPrevCourses; i++) {
-        free((*s)->prevCourses[i]);
+    if(*s) { // if student != NULL, can access all attributes
+        for(int i = 0; i < (*s)->numPrevCourses; i++) {
+            free((*s)->prevCourses[i]);
+        }
+        for (int i = 0; i < (*s)->numCurrCourses; i++) {
+            free((*s)->currCourses[i]);
+        }
+        free((*s)->prevCourses);
+        free((*s)->currCourses);
+        free((*s)->name);
     }
-    for (int i = 0; i < (*s)->numCurrCourses; i++) {
-        free((*s)->currCourses[i]);
-    }
-    free((*s)->prevCourses);
-    free((*s)->currCourses);
-    free((*s)->name);
     free(*s); // frees the student pointer
     return;
 }
 
 int areClassmates(const struct Student* s1, const struct Student* s2) {
+    if (!s1 || !s2) return 0; // if either student is NULL
     for (int i = 0; i < s1->numCurrCourses; i++) {
         for (int j = 0; j < s2->numCurrCourses; j++) {
             if (strcmp(s1->currCourses[i], s2->currCourses[j]) == 0)

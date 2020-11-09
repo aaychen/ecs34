@@ -12,4 +12,16 @@ int main()
     printf("retval: %d\n", retval);
     retval = parseForHighest("values1.txt", NULL);
     printf("retval: %d\n", retval);
+
+
+    // own tests
+    highest = 0;
+    retval = parseForHighest("values2.txt", &highest);
+    printf("retval: %d\n", retval);
+    printf("highest: %d\n", highest);
+
+    highest = 0;
+    retval = parseForHighest("nonexistentFile.txt", &highest);
+    printf("retval: %d\n", retval);
+    printf("highest: %d\n", highest);
 }

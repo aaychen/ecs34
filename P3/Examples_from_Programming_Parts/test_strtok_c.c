@@ -38,7 +38,7 @@ int main()
     printf("tok1: %s\n", tok1);
     printf("tok2: %s\n", tok2);
     printf("tok3: %s\n", tok3);
-    printf("tok4: %s\n", tok3);
+    printf("tok4: %s\n", tok4);
     printf("tok5: %s\n", tok5 ? tok5 : NULL_PTR_STR);
     free(tok1);
     free(tok2);
@@ -100,4 +100,43 @@ int main()
     free(tok2);
     free(tok3);
     free(tok4);
+
+    // own tests
+    char s6[] = "";
+    tok1 = strtok_c(s6, "?!a");
+    tok2 = strtok_c(NULL, "?!a");
+    printf("s6: %s\n", s6);
+    printf("tok1: %s\n", tok1 ? tok1 : NULL_PTR_STR);
+    printf("tok2: %s\n", tok2 ? tok2 : NULL_PTR_STR);
+
+    char s7[] = "a";
+    tok1 = strtok_c(s7, "?!a");
+    tok2 = strtok_c(NULL, "?!a");
+    printf("s7: %s\n", s7);
+    printf("tok1: %s\n", tok1 ? tok1 : NULL_PTR_STR);
+    printf("tok2: %s\n", tok2 ? tok2 : NULL_PTR_STR);
+
+    char s8[] = "?!a?!";
+    tok1 = strtok_c(s8, "?!a");
+    tok2 = strtok_c(NULL, "?!a");
+    printf("s8: %s\n", s8);
+    printf("tok1: %s\n", tok1 ? tok1 : NULL_PTR_STR);
+    printf("tok2: %s\n", tok2 ? tok2 : NULL_PTR_STR);
+
+    char s9[] = "abcde";
+    tok1 = strtok_c(s9, "");
+    tok2 = strtok_c(NULL, "");
+    tok3 = strtok_c(NULL, "");
+    printf("s9: %s\n", s9);
+    printf("tok1: %s\n", tok1);
+    printf("tok2: %s\n", tok2 ? tok2 : NULL_PTR_STR);
+    printf("tok3: %s\n", tok3 ? tok3 : NULL_PTR_STR);
+    free(tok1);
+
+    char s10[] = "";
+    tok1 = strtok_c(s10, "");
+    tok2 = strtok_c(NULL, "");
+    printf("s10: %s\n", s10);
+    printf("tok1: %s\n", tok1 ? tok1 : NULL_PTR_STR);
+    printf("tok2: %s\n", tok2 ? tok2 : NULL_PTR_STR);
 }
