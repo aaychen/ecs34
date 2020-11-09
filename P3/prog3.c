@@ -7,7 +7,7 @@
  * Given a file of integers, return the highest integer.
  * Assume the file contains 1 integer per line.
  * 
- * @param filename The file to open for reading
+ * @param filename The name of the file to open for reading
  * @param highest References the variable to store the max integer in
  * @return -1 if pointers are NULL; -2 if file can't be opened; 0 if success
  */
@@ -50,11 +50,12 @@ int* getAllHigherThan(const int* arr, unsigned arrlen, int threshold, unsigned* 
     // iterate through arr backwards and store into resArr
     for (int i = arrlen-1; i >= 0; i--) {
         int temp = arr[i];
-        if (temp > threshold)
+        if (temp > threshold) {
             resArr[count++] = temp;
-        if (count == arrSize) { // need to resize and allocate more space
-            arrSize *= 2;
-            resArr = realloc(resArr, arrSize * sizeof(int)); // realloc preserves memory
+            if (count == arrSize) { // need to resize and allocate more space
+                arrSize *= 2;
+                resArr = realloc(resArr, arrSize * sizeof(int)); // realloc preserves memory
+            }
         }
     }
     *newArrlen = count;
@@ -67,7 +68,7 @@ int* getAllHigherThan(const int* arr, unsigned arrlen, int threshold, unsigned* 
  * will see no null bytes like in strtok().
  * 
  * @param str The string to tokenize. If NULL, return next token from where function left off
- * @param delim The delimiters to tokenize by
+ * @param delim String of delimiters to tokenize by
  * @return NULL if empty token, no tokens, or NULL on first call; otherwise, token found
  */
 char* strtok_c(const char* str, const char* delim) {
@@ -84,7 +85,7 @@ char* strtok_c(const char* str, const char* delim) {
     }
     int tempIndex = 0;
     int isStart = 1; // flag for finding non-delimiter to start at
-    char* tempTok = calloc(strlen(searchPtr) + 1, sizeof(char));
+    char* tempTok = calloc(maxLen-currIndex+1, sizeof(char)); // most amount of space: currIndex to end of string
     for (int i = currIndex; i < maxLen; i++) {
         for (int j = 0; j < strlen(delim); j++) {
             if (searchPtr[i] == delim[j]) {
@@ -104,7 +105,7 @@ char* strtok_c(const char* str, const char* delim) {
         return NULL;
     }
     char* tok = calloc((strlen(tempTok) + 1), sizeof(char));
-    strcpy(tok, tempTok);
+    strncpy(tok, tempTok, strlen(tempTok)); // in case tok space < tempTok space
     free(tempTok);
     return tok;
 }
@@ -112,7 +113,7 @@ char* strtok_c(const char* str, const char* delim) {
 /**
  * Creates a student and stores their information given their record file.
  * 
- * @param studentFilename The student's file name
+ * @param studentFilename The name of the student's file
  * @return The reference to the student
  */
 struct Student* loadStudent(const char* studentFilename) {
@@ -132,8 +133,8 @@ struct Student* loadStudent(const char* studentFilename) {
             studentPtr->currCourses = malloc(studentPtr->numCurrCourses * sizeof(char*));
             for (int i = 0; i < studentPtr->numCurrCourses; i++) {
                 fgets(buf, MAX_LINE_LEN, fp);
-                studentPtr->currCourses[i] = calloc(strlen(buf), sizeof(char)); // zero value for char type is null byte
-                strncpy(studentPtr->currCourses[i], buf, strlen(buf)-1); // ignore newline character in name line read
+                studentPtr->currCourses[i] = calloc(strlen(buf), sizeof(char));
+                strncpy(studentPtr->currCourses[i], buf, strlen(buf)-1); // ignore newline character in currCourse line read
             }
         }
         // else if (i == 3) {} // blank line
@@ -142,8 +143,8 @@ struct Student* loadStudent(const char* studentFilename) {
             studentPtr->prevCourses = malloc(studentPtr->numPrevCourses * sizeof(char*));
             for (int i = 0; i < studentPtr->numPrevCourses; i++) {
                 fgets(buf, MAX_LINE_LEN, fp);
-                studentPtr->prevCourses[i] = calloc(strlen(buf), sizeof(char)); // zero value for char type is null byte
-                strncpy(studentPtr->prevCourses[i], buf, strlen(buf)-1); // ignore newline character in name line read
+                studentPtr->prevCourses[i] = calloc(strlen(buf), sizeof(char));
+                strncpy(studentPtr->prevCourses[i], buf, strlen(buf)-1); // ignore newline character in prevCourse line read
             }
         }
     }
@@ -173,7 +174,7 @@ void printStudent(const struct Student* s) {
 /**
  * Deallocates all memory associated with the student.
  * 
- * @param s Reference to the student's pointer
+ * @param s Pointer to the reference of the student
  */
 void freeStudent(struct Student** s) {
     if(*s) { // if student != NULL, can access all attributes
