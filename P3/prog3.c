@@ -29,24 +29,6 @@ int parseForHighest(const char* filename, int* highest) {
 
 int* getAllHigherThan(const int* arr, unsigned arrlen, int threshold, unsigned* newArrlen) {
     if (!arr || !newArrlen) return NULL;
-    // int tempArr[arrlen];
-    // int count = 0;
-    // // iterate over every item in arr
-    // for (int i = 0; i < arrlen; i++) {
-    //     int temp = arr[i];
-    //     if (temp > threshold) {
-    //         tempArr[count] = temp;
-    //         count++;
-    //     }
-    // }
-    // int* resArr = malloc(count * sizeof(int));
-    // // store items > threshold in reverse order as they appear in
-    // for (int i = 0; i < count; i++) {
-    //     resArr[i] = tempArr[count-i-1];
-    // }
-    // *newArrlen = count;
-    // return resArr;
-
     int arrSize = 1;
     int* resArr = malloc(arrSize * sizeof(int));
     int count = 0;
@@ -129,8 +111,10 @@ struct Student* loadStudent(const char* studentFilename) {
             studentPtr->currCourses = malloc(studentPtr->numCurrCourses * sizeof(char*));
             for (int i = 0; i < studentPtr->numCurrCourses; i++) {
                 fgets(buf, MAX_LINE_LEN, fp);
-                studentPtr->currCourses[i] = malloc((strlen(buf) + 1) * sizeof(char));
-                strcpy(studentPtr->currCourses[i], buf);
+                // studentPtr->currCourses[i] = malloc((strlen(buf) + 1) * sizeof(char));
+                // strcpy(studentPtr->currCourses[i], buf);
+                studentPtr->currCourses[i] = calloc(strlen(buf), sizeof(char)); // zero value for char type is null byte
+                strncpy(studentPtr->currCourses[i], buf, strlen(buf)-1); // ignore newline character in name line read
             }
         }
         // else if (i == 3) {} // blank line
@@ -139,8 +123,10 @@ struct Student* loadStudent(const char* studentFilename) {
             studentPtr->prevCourses = malloc(studentPtr->numPrevCourses * sizeof(char*));
             for (int i = 0; i < studentPtr->numPrevCourses; i++) {
                 fgets(buf, MAX_LINE_LEN, fp);
-                studentPtr->prevCourses[i] = malloc(strlen(buf + 1) * sizeof(char));
-                strcpy(studentPtr->prevCourses[i], buf);
+                // studentPtr->prevCourses[i] = malloc(strlen(buf + 1) * sizeof(char));
+                // strcpy(studentPtr->prevCourses[i], buf);
+                studentPtr->prevCourses[i] = calloc(strlen(buf), sizeof(char)); // zero value for char type is null byte
+                strncpy(studentPtr->prevCourses[i], buf, strlen(buf)-1); // ignore newline character in name line read
             }
         }
     }
@@ -153,11 +139,11 @@ void printStudent(const struct Student* s) {
     printf("Name: %s\n", s->name);
     printf("Current courses:\n");
     for (int i = 0; i < s->numCurrCourses; i++) {
-        printf("%s", s->currCourses[i]);
+        printf("%s\n", s->currCourses[i]);
     }
     printf("Previous courses:\n");
     for (int i = 0; i < s->numPrevCourses; i++) {
-        printf("%s", s->prevCourses[i]);
+        printf("%s\n", s->prevCourses[i]);
     }
     return;
 }
