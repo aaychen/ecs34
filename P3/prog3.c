@@ -3,7 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Assume file contains 1 integer per line
+/**
+ * Given a file of integers, return the highest integer.
+ * Assume the file contains 1 integer per line.
+ * 
+ * @param filename The file to open for reading
+ * @param highest References the variable to store the max integer in
+ * @return -1 if pointers are NULL; -2 if file can't be opened; 0 if success
+ */
 int parseForHighest(const char* filename, int* highest) {
     if (!filename || !highest) return -1;
     FILE* fp = fopen(filename, "r"); // create file pointer
@@ -25,6 +32,16 @@ int parseForHighest(const char* filename, int* highest) {
     return 0;
 }
 
+/**
+ * Find all integers greater than the threshold and return them in the reverse order that
+ * they appear in.
+ * 
+ * @param arr The array of integers to search through
+ * @param arrlen The length of arr
+ * @param threshold What we want the result integers to be above
+ * @param newArrlen References variable to store the resulting array's length in
+ * @return Array of integers greater than threshold in reverse order of appearance in arr
+ */
 int* getAllHigherThan(const int* arr, unsigned arrlen, int threshold, unsigned* newArrlen) {
     if (!arr || !newArrlen) return NULL;
     int arrSize = 1;
@@ -44,6 +61,15 @@ int* getAllHigherThan(const int* arr, unsigned arrlen, int threshold, unsigned* 
     return resArr;
 }
 
+/**
+ * Variation of strtok() function. This function does not modify the original string to 
+ * be tokenized. If a string is passed instead of NULL, the process is start over and
+ * will see no null bytes like in strtok().
+ * 
+ * @param str The string to tokenize. If NULL, return next token from where function left off
+ * @param delim The delimiters to tokenize by
+ * @return NULL if empty token, no tokens, or NULL on first call; otherwise, token found
+ */
 char* strtok_c(const char* str, const char* delim) {
     static const char* searchPtr = NULL;
     static int maxLen = 0; // length of original string to tokenize
@@ -83,6 +109,12 @@ char* strtok_c(const char* str, const char* delim) {
     return tok;
 }
 
+/**
+ * Creates a student and stores their information given their record file.
+ * 
+ * @param studentFilename The student's file name
+ * @return The reference to the student
+ */
 struct Student* loadStudent(const char* studentFilename) {
     if (!studentFilename) return NULL; // if studentFilename == NULL
     FILE* fp = fopen(studentFilename, "r");
@@ -119,6 +151,11 @@ struct Student* loadStudent(const char* studentFilename) {
     return studentPtr;
 }
 
+/**
+ * Print all information associated with the student.
+ * 
+ * @param s Reference to the student
+ */
 void printStudent(const struct Student* s) {
     if (!s) return;
     printf("Name: %s\n", s->name);
@@ -133,6 +170,11 @@ void printStudent(const struct Student* s) {
     return;
 }
 
+/**
+ * Deallocates all memory associated with the student.
+ * 
+ * @param s Reference to the student's pointer
+ */
 void freeStudent(struct Student** s) {
     if(*s) { // if student != NULL, can access all attributes
         for(int i = 0; i < (*s)->numPrevCourses; i++) {
@@ -149,6 +191,14 @@ void freeStudent(struct Student** s) {
     return;
 }
 
+/**
+ * Determines if two students are classmates by seeing if there are any common
+ * current courses.
+ * 
+ * @param s1 First student
+ * @param s2 Second student
+ * @return 0 if no; 1 if yes
+ */
 int areClassmates(const struct Student* s1, const struct Student* s2) {
     if (!s1 || !s2) return 0; // if either student is NULL
     for (int i = 0; i < s1->numCurrCourses; i++) {
