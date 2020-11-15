@@ -1,10 +1,10 @@
-#include "library.h"
-#include "circular_queue.h"
+// #include "library.h"
+// #include "circular_queue.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
-#include <stdbool.h>
+// #include <limits.h>
+// #include <stdbool.h>
 #include <ctype.h>
 #include <assert.h>
 
@@ -13,11 +13,11 @@
 
 //  FILE #2 TO SUBMIT
 
-int readFlags(char* flagArg);
+int readFlag(char* flagArg);
 struct FileRecord* loadRecord(const char* fileName);
-int printFileRecord(struct FileRecord* fr, int format);
+int printFileRecord(struct FileRecord** frArr, int frArrSize, int format);
 void printTotal(int format);
-int freeFileRecord(struct FileRecord** frPtr);
+int freeFileRecord(struct FileRecord** frArr, int frArrSize);
 
 struct FileRecord {
     char* fileName;
@@ -32,11 +32,6 @@ int totalChars = 0, totalWords = 0, totalLines = 0;
 // NEED TO ADD TEST CASES
     // REMOVE TEST CASES WHEN SUBMITTING FILE
 
-// flags can be:
-    // -m
-    // -mw
-    // -m -w
-    // --chars --words
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "No file provided.\n");
@@ -44,12 +39,13 @@ int main(int argc, char *argv[]) {
     }
     int isSuccess = 1, seenFile = 0;
     int outputFormat = 0, numFiles = 0;
+    int frArrSize = 1, frArrIndex = 0;
+    struct FileRecord** frArr = calloc(frArrSize, sizeof(struct FileRecord*));
     for (int i = 1; i < argc; i++) {
         char *temp = argv[i];
-        if (!seenFile && temp[0] == '-') { // if item starts with '-', flag
-            outputFormat += readFlags(temp);
-        }
-        else { // if no '-', file name
+        if (temp[0] == '-') { // if item starts with '-', flag
+            outputFormat += readFlag(temp);
+        } else { // if no '-', file name
             seenFile = 1;
             struct FileRecord* frPtr = loadRecord(temp);
             numFiles++;
@@ -58,11 +54,18 @@ int main(int argc, char *argv[]) {
                 totalWords += frPtr->numWords;
                 totalLines += frPtr->numLines;
             } else isSuccess = 0;
-            printFileRecord(frPtr, outputFormat);
-            freeFileRecord(&frPtr);
+            frArr[frArrIndex++] = frPtr;
+            if (frArrIndex == frArrSize) {
+                frArrSize *= 2;
+                frArr = realloc(frArr, frArrSize);
+            }
         }
     }
+    frArrSize = frArrIndex;
+    frArr = realloc(frArr, frArrSize);
+    printFileRecord(frArr, frArrSize, outputFormat);
     if (numFiles > 1) printTotal(outputFormat);
+    freeFileRecord(frArr, frArrSize);
     if (!seenFile) {
         fprintf(stderr, "No file provided.\n");
         return 2;
@@ -71,7 +74,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int readFlags(char* flagArg) {
+int readFlag(char* flagArg) {
     int res = 0;
     if (strlen(flagArg) > 1 && flagArg[1] != '-') {
         for (int j = 1; j < strlen(flagArg); j++) {
@@ -140,34 +143,38 @@ struct FileRecord* loadRecord(const char* fileName) {
     return frPtr;
 }
 
-// default print format: numLines numWords numChars fileName
+// default print format: numLines numWords numChars
 // -m or --chars for # of chars (001 = 1)
 // -w or --words for # of words (010 = 2)
 // -l or --lines for # of lines (100 = 4)
-int printFileRecord(struct FileRecord* frPtr, int format) {
-    if (!frPtr) return 1;
-    switch (format) {
-        case 1: // case 'm'
-            printf("%s: %d\n", frPtr->fileName, frPtr->numChars);
-            break;
-        case 2: // case 'w'
-            printf("%s: %d\n", frPtr->fileName, frPtr->numWords);
-            break;
-        case 4: // case 'l'
-            printf("%s: %d\n", frPtr->fileName, frPtr->numLines);
-            break;
-        case 3: // -wm
-            printf("%s: %d %d\n", frPtr->fileName, frPtr->numWords, frPtr->numChars);
-            break;
-        case 5: // -lm
-            printf("%s: %d %d\n", frPtr->fileName, frPtr->numLines, frPtr->numChars);
-            break;
-        case 6: // -lw
-            printf("%s: %d %d\n", frPtr->fileName, frPtr->numLines, frPtr->numWords);
-            break;
-        default: // no flags, or all flags
-            printf("%s: %d %d %d\n", frPtr->fileName, frPtr->numLines, frPtr->numWords, frPtr->numChars);
-            break;
+int printFileRecord(struct FileRecord** frArr, int frArrSize, int format) {
+    if (!frArr) return 1;
+    for (int i = 0; i < frArrSize; i++) {
+        struct FileRecord* frPtr = frArr[i];
+        if(!frPtr) continue;
+        switch (format) {
+            case 1: // case 'm'
+                printf("%s: %d\n", frPtr->fileName, frPtr->numChars);
+                break;
+            case 2: // case 'w'
+                printf("%s: %d\n", frPtr->fileName, frPtr->numWords);
+                break;
+            case 4: // case 'l'
+                printf("%s: %d\n", frPtr->fileName, frPtr->numLines);
+                break;
+            case 3: // -wm
+                printf("%s: %d %d\n", frPtr->fileName, frPtr->numWords, frPtr->numChars);
+                break;
+            case 5: // -lm
+                printf("%s: %d %d\n", frPtr->fileName, frPtr->numLines, frPtr->numChars);
+                break;
+            case 6: // -lw
+                printf("%s: %d %d\n", frPtr->fileName, frPtr->numLines, frPtr->numWords);
+                break;
+            default: // no flags, or all flags
+                printf("%s: %d %d %d\n", frPtr->fileName, frPtr->numLines, frPtr->numWords, frPtr->numChars);
+                break;
+        }
     }
     return 0;
 }
@@ -199,10 +206,12 @@ void printTotal(int format) {
     return;
 }
 
-int freeFileRecord(struct FileRecord** frPtr) {
-    if(!*frPtr) return 0;
-    free((*frPtr)->fileName);
-    free(*frPtr);
-    *frPtr = NULL;
+int freeFileRecord(struct FileRecord** frArr, int frArrSize) {
+    for (int i = 0; i < frArrSize; i++) {
+        if(frArr[i])
+            free(frArr[i]->fileName);
+        free(frArr[i]);
+    }
+    free(frArr);
     return 1;
 }
