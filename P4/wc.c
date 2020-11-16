@@ -11,7 +11,7 @@
 // NEED TO ADD TEST CASES
     // REMOVE TEST CASES WHEN SUBMITTING FILE
 
-int readFlag(int argc, char *argv[]);
+int readFlags(int argc, char *argv[]);
 struct FileRecord* loadRecord(const char* fileName);
 int printFileRecord(struct FileRecord* frPtr, int format);
 void printTotal(int format);
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     }
     int isSuccess = 1, seenFile = 0;
     int outputFormat = 0, numFiles = 0;
-    outputFormat = readFlag(argc, argv);
+    outputFormat = readFlags(argc, argv);
     for (int i = 1; i < argc; i++) {
         char *temp = argv[i];
         if (temp[0] != '-') {
@@ -58,8 +58,16 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-int readFlag(int argc, char *argv[]) {
-    int res = 0;
+/**
+ * Parses command line arguments for flags and determines which output format to use 
+ * when printing out details of the file.
+ * 
+ * @param argc Length of argv
+ * @param argv Array of command line arguments
+ * @return Output format
+ */
+int readFlags(int argc, char *argv[]) {
+    int format = 0;
     int seenCharsFlag = 0, seenWordsFlag = 0, seenLinesFlag = 0;
     for (int i = 1; i < argc; i++) {
         char *temp = argv[i];
@@ -67,34 +75,41 @@ int readFlag(int argc, char *argv[]) {
             if (strlen(temp) > 1 && temp[1] != '-') {
                 for (int j = 1; j < strlen(temp); j++) {
                     if (!seenCharsFlag && temp[j] == 'm') {
-                        res += 1;
+                        format += 1;
                         seenCharsFlag = 1;
                     } else if (!seenWordsFlag && temp[j] == 'w') {
-                        res += 2;
+                        format += 2;
                         seenWordsFlag = 1;
                     } else if (!seenLinesFlag && temp[j] == 'l') {
-                        res += 4;
+                        format += 4;
                         seenLinesFlag = 1;
                     }
                 }
             } else {
                 if (!seenCharsFlag && !strcmp(temp, "--chars")) {
-                    res += 1;
+                    format += 1;
                     seenCharsFlag = 1;
                 } else if (!seenWordsFlag && !strcmp(temp, "--words")) {
-                    res += 2;
+                    format += 2;
                     seenWordsFlag = 1;
                 } else if (!seenLinesFlag && !strcmp(temp, "--lines")) {
-                    res += 4;
+                    format += 4;
                     seenLinesFlag = 1;
                 }
             }
         }
     }
-    return res;
+    return format;
 }
 
-// when is the "Permission denied" error message??
+/**
+ * Finds the number of lines, words and characters and creates a pointer to an 
+ * instance of FileRecord to store the details and the file name.
+ * 
+ * @param fileName The name of the file of interest
+ * @return NULL if fileName is NULL or does not exist; otherwise, pointer to 
+ * the FileRecord instance
+ */
 struct FileRecord* loadRecord(const char* fileName) {
     if (!fileName) {
         // need perror() ??
@@ -113,7 +128,7 @@ struct FileRecord* loadRecord(const char* fileName) {
         perror("fopen");
         return frPtr;
     }
-    int prevIsSpace = 0;
+    int prevIsSpace = 1;
     int numLines = 0, numWords = 0, numChars = 0;
     while (ch != EOF) {
         if (ch == '\n') numLines++;
@@ -133,6 +148,14 @@ struct FileRecord* loadRecord(const char* fileName) {
     return frPtr;
 }
 
+/**
+ * Prints the details of the FileRecord instance that's referenced by frPtr according 
+ * to the format specified by flags the user provided.
+ * 
+ * @param frPtr References the FileRecord instance
+ * @param format The output format to follow
+ * @return 1 if frPtr is NULL; 0 otherwise
+ */
 int printFileRecord(struct FileRecord* frPtr, int format) {
     if (!frPtr) return 1;
     switch (format) {
@@ -161,6 +184,12 @@ int printFileRecord(struct FileRecord* frPtr, int format) {
     return 0;
 }
 
+/**
+ * Prints all files' details combined according to the format specified by the flags 
+ * the user provided.
+ * 
+ * @param format The output format to follow
+ */
 void printTotal(int format) {
     switch (format) {
         case 1: // case 'm'
@@ -188,6 +217,12 @@ void printTotal(int format) {
     return;
 }
 
+/**
+ * Deallocates all space associated with frPtr.
+ * 
+ * @param frPtr The reference to the FileRecord instance
+ * @return 0 if frPtr is NULL; 1 otherwise
+ */
 int freeFileRecord(struct FileRecord* frPtr) {
     if (!frPtr) return 0;
     free(frPtr->fileName);

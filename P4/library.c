@@ -5,8 +5,15 @@
 
 // FILE #1 TO SUBMIT
 
-// Assume first line in file is number of books and is >=1
-// Assume records are in proper format: title, author, year of book
+/**
+ * Creates instances of Book and stores them into an array of Books as an 
+ * attribute of Library. This function assumes the first line in filename 
+ * is the number of books and is >=1. It also assumes all records are in 
+ * the proper format: [title],[author],[year of book].
+ * 
+ * @param fileName The name of the file in interest
+ * @return Reference to a Library instance
+ */
 struct Library* loadLibrary(const char* filename) {
     if (!filename) return NULL;
     FILE* fp = fopen(filename, "r");
@@ -51,6 +58,13 @@ struct Library* loadLibrary(const char* filename) {
     return libraryPtr;
 }
 
+/**
+ * Prints out each Book's details using the array of Books that's an attribute
+ * of Library.
+ * 
+ * @param library References a Library instance
+ * @return 0 if library is NULL; 1 otherwise
+ */
 int printLibrary(const struct Library* library) {
     if (!library) return 0;
     for (int i = 0; i < library->numBooks; i++) {
@@ -63,6 +77,14 @@ int printLibrary(const struct Library* library) {
 }
 
 // Assume the same title never appears twice in a given file
+/**
+ * Counts the number of common titles between two Library instances. This function 
+ * assumes that the same title never appears twice in a given file.
+ * 
+ * @param lib1 Reference to first Library instance
+ * @param lib2 Reference to second Library instance
+ * @return 0 if either lib1 or lib2 is NULL; number of common titles otherwise
+ */
 int countCommonTitles(const struct Library* lib1, const struct Library* lib2) {
     if (!lib1 || !lib2) return 0;
     int count = 0;
@@ -79,6 +101,12 @@ int countCommonTitles(const struct Library* lib1, const struct Library* lib2) {
     // try implementing with hash table
 }
 
+/**
+ * Deallocates all space associated with library.
+ * 
+ * @param library References a Library instance
+ * @return 0 if library is NULL; 1 otherwise
+ */
 int freeLibrary(struct Library* library) {
     if (!library) return 0;
     // free title and author of every book
