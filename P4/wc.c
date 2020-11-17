@@ -6,11 +6,6 @@
 #define MAX_LINE_LEN 300
 #define BUF_LEN (MAX_LINE_LEN + 2)
 
-//  FILE #2 TO SUBMIT
-
-// NEED TO ADD TEST CASES
-    // REMOVE TEST CASES WHEN SUBMITTING FILE
-
 int readFlags(int argc, char *argv[]);
 struct FileRecord* loadRecord(const char* fileName);
 int printFileRecord(struct FileRecord* frPtr, int format);
@@ -34,9 +29,12 @@ int main(int argc, char *argv[]) {
     int isSuccess = 1, seenFile = 0;
     int outputFormat = 0, numFiles = 0;
     outputFormat = readFlags(argc, argv);
+
+    // Parse for file names
+    // Create FileRecord pointer, print FileRecord, and free the pointer
     for (int i = 1; i < argc; i++) {
         char *temp = argv[i];
-        if (temp[0] != '-') {
+        if (strlen(temp) > 0 && temp[0] != '-') {
             seenFile = 1;
             struct FileRecord* frPtr = loadRecord(temp);
             numFiles++;
@@ -49,6 +47,7 @@ int main(int argc, char *argv[]) {
             freeFileRecord(frPtr);
         }
     }
+
     if (numFiles > 1) printTotal(outputFormat);
     if (!seenFile) {
         fprintf(stderr, "No file provided.\n");
@@ -103,8 +102,8 @@ int readFlags(int argc, char *argv[]) {
 }
 
 /**
- * Finds the number of lines, words and characters and creates a pointer to an 
- * instance of FileRecord to store the details and the file name.
+ * Finds the number of lines, words and characters in fileName and creates a 
+ * pointer to an instance of FileRecord to store the details and the name.
  * 
  * @param fileName The name of the file of interest
  * @return NULL if fileName is NULL or does not exist; otherwise, pointer to 
@@ -112,12 +111,11 @@ int readFlags(int argc, char *argv[]) {
  */
 struct FileRecord* loadRecord(const char* fileName) {
     if (!fileName) {
-        // need perror() ??
         return NULL;
     }
     FILE* fp = fopen(fileName, "r");
     if (!fp) {
-        perror("fopen");
+        perror("fopen"); // Nonexistent file
         return NULL;
     }
     struct FileRecord* frPtr = malloc(sizeof(struct FileRecord));
@@ -125,7 +123,7 @@ struct FileRecord* loadRecord(const char* fileName) {
     strcpy(frPtr->fileName, fileName);
     char ch = fgetc(fp);
     if (!ch) {
-        perror("fopen");
+        perror("fopen"); // If no read permission for file (restricted file)
         return frPtr;
     }
     int prevIsSpace = 1;
@@ -154,10 +152,10 @@ struct FileRecord* loadRecord(const char* fileName) {
  * 
  * @param frPtr References the FileRecord instance
  * @param format The output format to follow
- * @return 1 if frPtr is NULL; 0 otherwise
+ * @return 0 if frPtr is NULL; 1 otherwise
  */
 int printFileRecord(struct FileRecord* frPtr, int format) {
-    if (!frPtr) return 1;
+    if (!frPtr) return 0;
     switch (format) {
         case 1: // case 'm'
             printf("%s: %d\n", frPtr->fileName, frPtr->numChars);
@@ -181,7 +179,7 @@ int printFileRecord(struct FileRecord* frPtr, int format) {
             printf("%s: %d %d %d\n", frPtr->fileName, frPtr->numLines, frPtr->numWords, frPtr->numChars);
             break;
     }
-    return 0;
+    return 1;
 }
 
 /**
