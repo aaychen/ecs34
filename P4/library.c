@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// FILE #1 TO SUBMIT
-
 /**
  * Creates instances of Book and stores them into an array of Books as an 
  * attribute of Library. This function assumes the first line in filename 

@@ -9,8 +9,30 @@ struct CirQueue
     int capacity;
     int* items;
     int headIndex;
-    int length;
+    int numItems;
 };
+
+// DELETE FUNCTION WHEN SUBMITTING
+// For testing purposes
+int printCirQueue(const CirQueue* queue) {
+    if (!queue) {
+        printf("\tQueue is NULL.\n");
+        return 0;
+    }
+    printf("\n\theadIndex: %d\n", queue->headIndex);
+    printf("\tnumItems: %d\n", queue->numItems);
+    printf("\tQueue:\n");
+    for (int i = queue->headIndex; i < queue->headIndex + queue->numItems; i++) {
+        if (i >= queue->capacity) {
+            int tempIndex = i - queue->capacity;
+            printf("\t%d\n", queue->items[tempIndex]);
+        } else {
+            printf("\t%d\n", queue->items[i]);
+        }
+    }
+    printf("\n");
+    return 1;
+}
 
 /**
  * Creates a CirQueue given some capacity.
@@ -24,8 +46,8 @@ CirQueue* cirQueueCreate(int capacity)
     CirQueue* queue = malloc(sizeof(CirQueue));
     queue->capacity = capacity;
     queue->items = malloc(queue->capacity * sizeof(int));
-    queue->headIndex = -1;
-    queue->length = 0;
+    queue->headIndex = 0;
+    queue->numItems = 0;
     return queue;
 }
 
@@ -47,8 +69,9 @@ int cirQueueDestroy(CirQueue* queue)
 /**
  * Inserts val into queue into the rightmost available slot. If the rightmost 
  * available slot is past the end of the array, the function wraps around the queue 
- * to the beginning. If the queue is full (no more available slots), then enqueue 
- * fails.
+ * to the beginning. To find the wrap index, no modding is needed because the max 
+ * index that exceeds capacity size is (capacity - 1 + capacity) = 2 * capacity - 1. 
+ * If the queue is full (numItems == capacity), then enqueue fails.
  * 
  * @param queue Reference to the CirQueue instance
  * @param val Value to insert into the queue
@@ -56,27 +79,19 @@ int cirQueueDestroy(CirQueue* queue)
  */
 int cirQueueEnqueue(CirQueue* queue, int val)
 {
-    if (!queue || queue->length == queue->capacity) return 0;
-    if(queue->headIndex == -1) {
-        queue->items[0] = val;
-        queue->headIndex = 0;
+    if (!queue || queue->numItems == queue->capacity) return 0;
+    if(!queue->numItems) {
+        queue->items[queue->headIndex] = val;
     } else {
-        int tempIndex = queue->headIndex + queue->length;
+        int tempIndex = queue->headIndex + queue->numItems;
         if (tempIndex < queue->capacity) {
             queue->items[tempIndex] = val;
         } else {
-            int wrapIndex = (tempIndex - queue->capacity) % queue->capacity;
+            int wrapIndex = tempIndex - queue->capacity;
             queue->items[wrapIndex] = val;
         }
     }
-    queue->length++;
-
-    // printf("\nQueue after enqueue:\n");
-    // for (int i = queue->headIndex; i < queue->headIndex + queue->length; i++) {
-    //     printf("%d\n", *queue->items[i]);
-    // }
-    // printf("\n");
-
+    queue->numItems++;
     return 1;
 }
 
@@ -90,34 +105,23 @@ int cirQueueEnqueue(CirQueue* queue, int val)
  */
 int cirQueueDequeue(CirQueue* queue, int* val)
 {
-    if (!queue || queue->headIndex == -1) return 0;
+    if (!queue || !queue->numItems) return 0;
     *val = queue->items[queue->headIndex];
-    queue->items[queue->headIndex] = 1;
     queue->headIndex++;
     if (queue->headIndex == queue->capacity)
         queue->headIndex = 0;
-    queue->length--;
-    if (queue->length == 0) 
-        queue->headIndex = -1;
-
-    // printf("\nheadIndex: %d\n", queue->headIndex);
-    // printf("Queue after dequeue:\n");
-    // for (int i = queue->headIndex; i < queue->headIndex + queue->length; i++) {
-    //     printf("%d\n", *queue->items[i]);
-    // }
-    // printf("\n");
-
+    queue->numItems--;
     return 1;
 }
 
 /**
- * Returns the length of queue (i.e. the number of items in queue).
+ * Returns the number of items in the queue.
  * 
  * @param queue Reference to the CirQueue instance
- * @return 0 if queue is NULL; otherwise, length of queue
+ * @return 0 if queue is NULL; otherwise, number of items
  */
 int cirQueueLength(const CirQueue* queue)
 {
     if(!queue) return 0;
-    return queue->length;
+    return queue->numItems;
 }
