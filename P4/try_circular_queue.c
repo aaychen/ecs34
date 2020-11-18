@@ -4,9 +4,6 @@
 
 #include <assert.h>
 
-void ownTests();
-int printCirQueue(const CirQueue* queue);
-
 int main()
 {
     CirQueue* queue = cirQueueCreate(4);
@@ -39,12 +36,8 @@ int main()
     printf("4. Length: %d\n", cirQueueLength(queue));
     cirQueueDestroy(queue);
 
-    ownTests();
-}
-
-void ownTests() {
-    int val = 0;
-
+    // OWN TESTS
+    val = 0;
     // Test functions with null pointers
     assert(cirQueueEnqueue(NULL, 12) == 0);
     assert(cirQueueDequeue(NULL, &val) == 0);
@@ -53,7 +46,7 @@ void ownTests() {
     assert(cirQueueDestroy(NULL) == 0);
 
     // Test queue with capacity 0
-    CirQueue* queue = cirQueueCreate(0);
+    queue = cirQueueCreate(0);
     assert(queue == NULL);
     assert(cirQueueLength(queue) == 0);
     assert(cirQueueEnqueue(queue, 93) == 0);
@@ -89,57 +82,44 @@ void ownTests() {
     queue = cirQueueCreate(5);
     assert(queue != NULL);
     assert(cirQueueLength(queue) == 0);
-        printCirQueue(queue);
     assert(cirQueueEnqueue(queue, 2) == 1);
     assert(cirQueueEnqueue(queue, 4) == 1);
     assert(cirQueueEnqueue(queue, 12) == 1);
     assert(cirQueueEnqueue(queue, 59) == 1);
     assert(cirQueueEnqueue(queue, 15) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 5);
     assert(cirQueueEnqueue(queue, 10) == 0);
     assert(cirQueueLength(queue) == 5);
     assert(cirQueueDequeue(queue, &val) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 4);
     assert(val == 2);
     assert(cirQueueDequeue(queue, &val) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 3);
     assert(val == 4);
     assert(cirQueueEnqueue(queue, 176) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 4);
     assert(cirQueueEnqueue(queue, 123) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 5);
     assert(cirQueueEnqueue(queue, 2041) == 0);
     assert(cirQueueLength(queue) == 5);
     assert(cirQueueDequeue(queue, &val) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 4);
     assert(val == 12);
     assert(cirQueueDequeue(queue, &val) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 3);
     assert(val == 59);
     assert(cirQueueDequeue(queue, &val) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 2);
     assert(val == 15);
     assert(cirQueueDequeue(queue, &val) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 1);
     assert(val == 176);
     assert(cirQueueDequeue(queue, &val) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 0);
     assert(val == 123);
     assert(cirQueueEnqueue(queue, 34) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 1);
     assert(cirQueueDequeue(queue, &val) == 1);
-        printCirQueue(queue);
     assert(cirQueueLength(queue) == 0);
     assert(val == 34);
     assert(cirQueueDestroy(queue) == 1);

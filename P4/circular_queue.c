@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// FILE #3 TO SUBMIT
-
 struct CirQueue
 {
     int capacity;
@@ -12,33 +10,11 @@ struct CirQueue
     int numItems;
 };
 
-// DELETE FUNCTION WHEN SUBMITTING
-// For testing purposes
-int printCirQueue(const CirQueue* queue) {
-    if (!queue) {
-        printf("\tQueue is NULL.\n");
-        return 0;
-    }
-    printf("\n\theadIndex: %d\n", queue->headIndex);
-    printf("\tnumItems: %d\n", queue->numItems);
-    printf("\tQueue:\n");
-    for (int i = queue->headIndex; i < queue->headIndex + queue->numItems; i++) {
-        if (i >= queue->capacity) {
-            int tempIndex = i - queue->capacity;
-            printf("\t%d\n", queue->items[tempIndex]);
-        } else {
-            printf("\t%d\n", queue->items[i]);
-        }
-    }
-    printf("\n");
-    return 1;
-}
-
 /**
  * Creates a CirQueue given some capacity.
  * 
  * @param capacity Capacity to give the CirQueue instance
- * @return Reference to the CirQueue instance
+ * @return NULL if capacity is not positive; otherwise, reference to the CirQueue instance
  */
 CirQueue* cirQueueCreate(int capacity)
 {
@@ -118,7 +94,7 @@ int cirQueueDequeue(CirQueue* queue, int* val)
  * Returns the number of items in the queue.
  * 
  * @param queue Reference to the CirQueue instance
- * @return 0 if queue is NULL; otherwise, number of items
+ * @return 0 if queue is NULL; otherwise, number of items in the queue
  */
 int cirQueueLength(const CirQueue* queue)
 {
