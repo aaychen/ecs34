@@ -6,6 +6,7 @@
 
 UnweightedGraph::UnweightedGraph(const std::string& filename)
 {
+    // file stream objects automatically clean up (no need to close file)
     std::basic_ifstream<char> file{filename}; // initialize istream to open filename
     if (!file.is_open()) {
         throw std::runtime_error{FAILED_OPEN_MSG};
@@ -28,13 +29,11 @@ UnweightedGraph::UnweightedGraph(const std::string& filename)
         if (id1 < 0 || id2 < 0 || id1 >= numVertices || id2 >= numVertices 
                     || id1 == id2 || adjMatrix[id1][id2] == true) { // invalid IDs, self-loop, multi-edges
             throw std::runtime_error{INVALID_GRAPH_MSG};
-            // file.close();
         } else {
             adjMatrix[id1][id2] = true;
             adjList[id1].push_back(id2);
         }
     }
-    file.close();
 }
 
 int UnweightedGraph::getNumVertices() const
