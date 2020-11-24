@@ -4,14 +4,13 @@
 #include <queue>
 #include <stack>
 
-using namespace std;
-
 UnweightedGraph::UnweightedGraph(const std::string& filename)
 {
-    ifstream file{filename}; // initialize istream to open filename
-    if (!file.is_open())
-        throw runtime_error{FAILED_OPEN_MSG};
-    string buf;
+    std::basic_ifstream<char> file{filename}; // initialize istream to open filename
+    if (!file.is_open()) {
+        throw std::runtime_error{FAILED_OPEN_MSG};
+    }
+    std::string buf;
     getline(file, buf);
     numVertices = atoi(buf.c_str());
 
@@ -27,8 +26,9 @@ UnweightedGraph::UnweightedGraph(const std::string& filename)
     while (getline(file, buf)) {
         sscanf(buf.c_str(), " %d %d ", &id1, &id2); // must convert C++ string to C string to call sscanf()
         if (id1 < 0 || id2 < 0 || id1 >= numVertices || id2 >= numVertices 
-                || id1 == id2 || adjMatrix[id1][id2] == 1) { // invalid IDs, self-loop, multi-edges
-            throw runtime_error{INVALID_GRAPH_MSG};
+                    || id1 == id2 || adjMatrix[id1][id2] == true) { // invalid IDs, self-loop, multi-edges
+            throw std::runtime_error{INVALID_GRAPH_MSG};
+            // file.close();
         } else {
             adjMatrix[id1][id2] = true;
             adjList[id1].push_back(id2);
@@ -54,13 +54,13 @@ std::vector<std::vector<int>> UnweightedGraph::getAdjacencyLists() const
 
 std::vector<int> UnweightedGraph::getBFSOrdering(int start) const
 {
-    vector<int> ordering;
+    std::vector<int> ordering;
     if (start < 0 || start >= numVertices) return ordering;
     bool disc[numVertices];
     for (int i = 0; i < numVertices; i++) {
         disc[i] = false;
     }
-    queue<int> q;
+    std::queue<int> q;
     disc[start] = true;
     q.push(start);
     while (q.size()) {
@@ -79,13 +79,13 @@ std::vector<int> UnweightedGraph::getBFSOrdering(int start) const
 
 std::vector<int> UnweightedGraph::getDFSOrdering(int start) const
 {
-    vector<int> ordering;
+    std::vector<int> ordering;
     if (start < 0 || start >= numVertices) return ordering;
     bool processed[numVertices];
     for (int i = 0; i < numVertices; i++) {
         processed[i] = false;
     }
-    stack<int> s;
+    std::stack<int> s;
     s.push(start);
     while (s.size()) {
         int curr = s.top();
@@ -104,18 +104,11 @@ std::vector<int> UnweightedGraph::getDFSOrdering(int start) const
 
 std::vector<std::vector<bool>> UnweightedGraph::getTransitiveClosure() const
 {
-    std::vector<std::vector<bool>> transClosure = adjMatrix;
+    std::vector<std::vector<bool>> transClosure = adjMatrix; // deep copy
     for (int i = 0; i < numVertices; i++) {
-        for (int j = 0; j < numVertices; j++) {
-            if (i == j) 
-                transClosure[i][j] = 1;
-        }
-    }
-    for (int i = 0; i < numVertices; i++) {
-        vector<int> DFSOrdering = getDFSOrdering(i);
+        std::vector<int> DFSOrdering = getDFSOrdering(i);
         for (int nodeID : DFSOrdering) {
-            if (i != nodeID)
-                transClosure[i][nodeID] = 1;
+            transClosure[i][nodeID] = 1;
         }
     }
     return transClosure;

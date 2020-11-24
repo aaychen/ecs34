@@ -63,7 +63,11 @@ int main(int argc, char *argv[])
         return 1;
     }
     std::string filename1 = argv[1];
-    UnweightedGraph graph = UnweightedGraph(filename1);
-    std::cout << "=== " << filename1 << " ===\n";
-    printGraphInfo(graph);
+    try {
+        UnweightedGraph graph = UnweightedGraph(filename1);
+        std::cout << "=== " << filename1 << " ===\n";
+        printGraphInfo(graph);
+    } catch (const std::runtime_error& e) {
+        std::cout << "std::runtime_error exception caught with message: " << e.what() << '\n';
+    }
 }
