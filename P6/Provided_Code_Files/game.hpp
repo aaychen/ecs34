@@ -42,18 +42,18 @@ private:  // private methods
      * Loop until the game is over. On each iteration, use the controller
      * to get input from the user.
      */
-    // void doGameLoop();
+    // Command doGameLoop();
 
     /**
      * Update matters related to game logic, e.g. collisions, level completion.
      */
-    // void update();
+    void update(Command move);
 
     /**
      * Load information related to new level into member variables,
      * being careful to not leave traces of information from previous levels. 
      */
-    // void loadLevel();
+    void loadLevel();
 
 private:
     static const int MIN_VIEW_HEIGHT;
@@ -74,6 +74,20 @@ private:
     Controller* mController;
 
     InterfaceType mInterfaceType;
+
+    int screenHeight, screenWidth;
+    int totalLevels, currentLevel;
+    std::vector<std::string> levelFiles;
+    int currentMapSegment;
+    std::vector<MapSegment*> mapSegments; // mapSegments.size() == totalMapSegments
+    int playerX, playerY;
+    int totalItems, numItemsFound;
+    char heroIcon;
+    int maxMoves, numMovesPlayed;
+
+    // Level specific information (need to reset each time when loading a level)
+    // totalMapSegments, playerX, playerY, totalItems, numItemsFound, heroIcon, maxMoves, numMoves
+
 };
 
 #endif // GAME_HPP

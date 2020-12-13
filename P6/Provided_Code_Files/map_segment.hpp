@@ -35,6 +35,12 @@ public:
      */
     // std::vector<std::string> getAsLines() const;
 
+    ~MapSegment();
+    void addBuilding(int y, int x);
+    std::vector<Building*> getBuildings();
+    void addItem(int y, int x);
+    std::vector<Item*> getItems();
+
 private:
     static char VERTICAL_BORDER_CHAR;
     static char HORIZONTAL_BORDER_CHAR;
@@ -53,6 +59,9 @@ private:
      */
     int mPortalY;
     int mPortalX;
+
+    std::vector<Building*> buildings;
+    std::vector<Item*> items;
 };
 
 #endif // MAP_SEGMENT_HPP

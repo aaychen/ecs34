@@ -23,7 +23,7 @@ public:
      * Returns true if the given coordinates are contained
      * in this building.
      */
-    // bool contains(int y, int x) const;
+    bool contains(int y, int x) const;
 
 private:
     static const int width;
