@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ $# -lt 2 ]; then
-    echo Usage: ./ cp_mult.sh [src] [dest1] ...
+    echo Usage: ./cp_mult.sh [src] [dest1] ...
     exit 1
 else 
     argNum=2
