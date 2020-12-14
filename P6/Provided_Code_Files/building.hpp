@@ -17,7 +17,7 @@ public:
     /**
      * Draws self onto the given board.
      */
-    // void drawIn(std::vector<std::string>& board) const;
+    void drawIn(std::vector<std::string>& board) const;
 
     /**
      * Returns true if the given coordinates are contained

@@ -1,6 +1,9 @@
 #ifndef ITEM_HPP
 #define ITEM_HPP
 
+#include <string>
+#include <vector>
+
 /**
  * You shouldn't have any reason to modify this file.
  *
@@ -15,6 +18,7 @@ public:
 
     int getY() const { return mY; }
     int getX() const { return mX; }
+    void drawIn(std::vector<std::string>& board) const;
 
     static char ICON;
 

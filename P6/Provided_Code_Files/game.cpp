@@ -26,33 +26,37 @@ Game::Game(const std::string& filename, InterfaceType interfaceType)
     , mInterfaceType{interfaceType}
 {
     // TODO: Implement.
-    if (mInterfaceType == InterfaceType::Print) {
-        mController = new PrintController();
-        mView = new PrintView(Game::MIN_VIEW_HEIGHT, Game::MIN_VIEW_WIDTH);
-    } else if (mInterfaceType == InterfaceType::Curses) {
-        mController = new CursesController();
-        mView = new CursesView(Game::MIN_VIEW_HEIGHT, Game::MIN_VIEW_WIDTH);
-    }
-
     std::basic_ifstream<char> infile{filename}; // initialize istream to open filename
     std::string buf;
-    // getline(infile, buf);
-    // sscanf(buf.c_str(), " %d %d ", &screenHeight, &screenWidth);
-    // getline(infile, buf);
-    // sscanf(buf.c_str(), " %d ", &totalLevels);
-
-    // std::string testFileName = "game1.txt";
-    // std::size_t tempIndex = testFileName.find_last_of("/");
-    // std::string dirPath = (tempIndex != std::string::npos) ? testFileName.substr(0, tempIndex+1) : "";
-    // std::cout << dirPath << std::endl;
     std::size_t tempIndex = filename.find_last_of("/");
     std::string dirPath = (tempIndex != std::string::npos) ? filename.substr(0, tempIndex+1) : "";
-    int i = 1;
-    while (getline(infile, buf)) {
-        if (i == 1) sscanf(buf.c_str(), " %d %d ", &screenHeight, &screenWidth);
-        else if (i == 2) sscanf(buf.c_str(), " %d ", &totalLevels);
-        else levelFiles.push_back(dirPath + buf);
-        i++;
+    infile >> screenHeight >> screenWidth;
+    infile >> totalLevels;
+    for (int i = 0; i < totalLevels; i++) {
+        infile >> buf;
+        levelFiles.push_back(dirPath + buf);
+    }
+    
+    if (mInterfaceType == InterfaceType::Print) {
+        mController = new PrintController();
+        if (screenHeight > MIN_VIEW_HEIGHT && screenWidth > MIN_VIEW_WIDTH)
+            mView = new PrintView(screenHeight, screenWidth);
+        else if (screenHeight > MIN_VIEW_HEIGHT)
+            mView = new PrintView(screenHeight, MIN_VIEW_WIDTH);
+        else if (screenWidth > MIN_VIEW_WIDTH)
+            mView = new PrintView(MIN_VIEW_HEIGHT, screenWidth);
+        else 
+            mView = new PrintView(MIN_VIEW_HEIGHT, MIN_VIEW_WIDTH);
+    } else if (mInterfaceType == InterfaceType::Curses) {
+        mController = new CursesController();
+        if (screenHeight > MIN_VIEW_HEIGHT && screenWidth > MIN_VIEW_WIDTH)
+            mView = new CursesView(screenHeight, screenWidth);
+        else if (screenHeight > MIN_VIEW_HEIGHT)
+            mView = new CursesView(screenHeight, MIN_VIEW_WIDTH);
+        else if (screenWidth > MIN_VIEW_WIDTH)
+            mView = new CursesView(MIN_VIEW_HEIGHT, screenWidth);
+        else 
+            mView = new CursesView(MIN_VIEW_HEIGHT, MIN_VIEW_WIDTH);
     }
     currentLevel = 0;
 }
@@ -72,17 +76,10 @@ Game::~Game()
 void Game::run()
 {
     // TODO: Implement.
-
-    // Check level file names
-    // for (int i = 0; i < levelFiles.size(); i++) {
-    //     std::cout << levelFiles[i] << std::endl;
-    // }
-
     bool passLevel = true;
     std::string endMessage;
     Command user_in;
     while (true) {
-        // user_in = doGameLoop();
         if (passLevel) {
             currentLevel++;
             if (currentLevel > totalLevels) {
@@ -92,126 +89,144 @@ void Game::run()
             loadLevel();
             passLevel = false; // WHEN TO SET TO TRUE?
         }
+        std::cout << "Level: " << currentLevel << std::endl;
+        std::cout << "Items remaining: " << numItemsRemaining << std::endl;
+        std::cout << "Moves remaining: " << numMovesRemaining << std::endl;
+        draw();
         user_in = mController->getInput();
         if (user_in == Command::Quit) {
             endMessage = "You quit the game.";
             break;
         }
         update(user_in);
+        if (numItemsRemaining == 0) {
+            if (currentLevel != totalLevels) {
+                passLevel = true;
+            } else {
+                endMessage = "You won the game.";
+                break;
+            }
+        } else if (numMovesRemaining == 0) {
+            endMessage = "You lost the game.";
+            break;
+        }
     }
     std::cout << endMessage << std::endl;
     return;
 }
 
 void Game::loadLevel() {
+    mapSegments.clear();
     std::string levelFileName = levelFiles[currentLevel - 1];
     std::basic_ifstream<char> infile{levelFileName}; // initialize istream to open filename
     std::string buf;
-    // getline(infile, buf);
-    // sscanf(buf.c_str(), " %d ", &currentMapSegment);
-    // getline(infile, buf);
-    // sscanf(buf.c_str(), " %d %d ", &playerY, &playerX);
-    // getline(infile, buf);
-    char direction;
-    // sscanf(buf.c_str(), " %c", &direction);
-    // direction = tolower(direction);
-    // if (direction == 'u') heroIcon = Game::HERO_ICON_UP;
-    // else if (direction == 'd') heroIcon = Game::HERO_ICON_DOWN;
-    // else if (direction == 'l') heroIcon = Game::HERO_ICON_LEFT;
-    // else heroIcon = Game::HERO_ICON_RIGHT;
-    // std::cout << buf << std::endl;
-    // std::cout << direction << std::endl;
-    // std::cout << heroIcon << std::endl;
+    std::string direction; 
     char tempCode;
     int tempMapSegID, tempY, tempX;
-    int i = 1;
-    while (getline(infile, buf)) {
-        std::cout << buf << std::endl;
-        if (i == 1) sscanf(buf.c_str(), " %d ", &currentMapSegment);
-        else if (i == 2) sscanf(buf.c_str(), " %d %d ", &playerY, &playerX);
-        else if (i == 3) {
-            sscanf(buf.c_str(), " %c", &direction);
-            direction = tolower(direction);
-            if (direction == 'u') heroIcon = Game::HERO_ICON_UP;
-            else if (direction == 'd') heroIcon = Game::HERO_ICON_DOWN;
-            else if (direction == 'l') heroIcon = Game::HERO_ICON_LEFT;
-            else heroIcon = Game::HERO_ICON_RIGHT;
+    numItemsRemaining = 0;
+    infile >> currentMapSegment;
+    infile >> playerY >> playerX;
+    infile >> direction;
+    if (tolower(direction[0]) == 'u') heroIcon = HERO_ICON_UP;
+    else if (tolower(direction[0]) == 'd') heroIcon = HERO_ICON_DOWN;
+    else if (tolower(direction[0]) == 'l') heroIcon = HERO_ICON_LEFT;
+    else heroIcon = HERO_ICON_RIGHT;
+    while (infile >> tempCode) {
+        if (tempCode == 'M') {
+            infile >> tempY >> tempX;
+            MapSegment* ms = new MapSegment(tempY, tempX); // create MapSegment object
+            mapSegments.push_back(ms);
+        } else if (tempCode == 'B') {
+            infile >> tempMapSegID >> tempY >> tempX;
+            mapSegments[tempMapSegID]->addBuilding(tempY, tempX); // add building to mapSegments[id]
+        } else if (tempCode == 'I') {
+            infile >> tempMapSegID >> tempY >> tempX;
+            mapSegments[tempMapSegID]->addItem(tempY, tempX); // add item to mapSegments[id]
+            numItemsRemaining++;
+        } else if (tempCode == 'P') {
+            // line format: 'P' [seg1_ID] [wall] [seg2_ID] [wall]
+            int sourceID, destID;
+            std::string sourceWall, destWall;
+            infile >> sourceID >> sourceWall >> destID >> destWall;
+            mapSegments[sourceID]->addPortal(sourceWall);
+            mapSegments[destID]->addPortal(destWall);
+        } else if (tempCode == 'N') {
+            infile >> numMovesRemaining;
         }
-        else {
-            if (buf[0] == 'M') {
-                sscanf(buf.c_str(), " %c %d %d ", &tempCode, &tempY, &tempX);
-                MapSegment* ms = new MapSegment(tempY, tempX); // create MapSegment object
-                mapSegments.push_back(ms);
-            } else if (buf[0] == 'B') {
-                sscanf(buf.c_str(), " %c %d %d %d ", &tempCode, &tempMapSegID, &tempY, &tempX);
-                mapSegments[tempMapSegID]->addBuilding(tempY, tempX); // add building to mapSegments[id]
-            } else if (buf[0] == 'I') {
-                sscanf(buf.c_str(), " %c %d %d %d ", &tempCode, &tempMapSegID, &tempY, &tempX);
-                mapSegments[tempMapSegID]->addItem(tempY, tempX); // add item to mapSegments[id]
-                totalItems++;
-            } else if (buf[0] == 'P') {
-
-            } else if (buf[0] == 'N') {
-                sscanf(buf.c_str(), " %c %d ", &tempCode, &maxMoves);
-            }
-        }
-        i++;
     }
-    std::cout << "currentMapSegment: " << currentMapSegment << std::endl;
-    std::cout << "(playerY, playerX): " << "(" << playerY << ", " << playerX << ")" << std::endl;
-    std::cout << "cursor: " << heroIcon << std::endl;
-    for (size_t i = 0; i < mapSegments.size(); i++) {
-        std::cout << "mapSegments[" << i << "]: " << mapSegments[i]->getHeight() << " " << mapSegments[i]->getWidth() << std::endl;
-        std::cout << "numBuildings: " << mapSegments[i]->getBuildings().size() << std::endl;
-        std::cout << "numItems: " << mapSegments[i]->getItems().size() << std::endl;
-    }
-    std::cout << "maxMoves: " << maxMoves << std::endl;
-    numItemsFound = 0;
-    numMovesPlayed = 0;
+    mapSegments[currentMapSegment]->setPlayerDirection(playerY, playerX, heroIcon);
     return;
 }
 
-// Command Game::doGameLoop() {
-//     return mController->getInput();
-// }
+void Game::draw() {
+    std::vector<std::string> msAsLines = mapSegments[currentMapSegment]->getAsLines();
+    for (size_t row = 0; row < msAsLines.size(); row++) {
+        std::cout << msAsLines[row] << std::endl;
+    }
+    // mView->draw(msAsLines);
+    return;
+}
 
 void Game::update(Command move) {
     if (move == Command::Left) { // counter-clockwise rotation
-        if (heroIcon == Game::HERO_ICON_UP)
-            heroIcon = Game::HERO_ICON_LEFT;
-        else if (heroIcon == Game::HERO_ICON_LEFT)
-            heroIcon = Game::HERO_ICON_DOWN;
-        else if (heroIcon == Game::HERO_ICON_DOWN)
-            heroIcon = Game::HERO_ICON_RIGHT;
-        else
-            heroIcon = Game::HERO_ICON_UP;
+        if (heroIcon == HERO_ICON_UP) heroIcon = HERO_ICON_LEFT;
+        else if (heroIcon == HERO_ICON_LEFT) heroIcon = HERO_ICON_DOWN;
+        else if (heroIcon == HERO_ICON_DOWN) heroIcon = HERO_ICON_RIGHT;
+        else heroIcon = HERO_ICON_UP;
+        mapSegments[currentMapSegment]->setPlayerDirection(playerY, playerX, heroIcon);
     }
     else if (move == Command::Right) { // clockwise rotation
-        if (heroIcon == Game::HERO_ICON_UP)
-            heroIcon = Game::HERO_ICON_RIGHT;
-        else if (heroIcon == Game::HERO_ICON_RIGHT)
-            heroIcon = Game::HERO_ICON_DOWN;
-        else if (heroIcon == Game::HERO_ICON_DOWN)
-            heroIcon = Game::HERO_ICON_LEFT;
-        else
-            heroIcon = Game::HERO_ICON_UP;
+        if (heroIcon == HERO_ICON_UP) heroIcon = HERO_ICON_RIGHT;
+        else if (heroIcon == HERO_ICON_RIGHT) heroIcon = HERO_ICON_DOWN;
+        else if (heroIcon == HERO_ICON_DOWN) heroIcon = HERO_ICON_LEFT;
+        else heroIcon = HERO_ICON_UP;
+        mapSegments[currentMapSegment]->setPlayerDirection(playerY, playerX, heroIcon);
     }
     else if (move == Command::Forward) {
-        if (heroIcon == Game::HERO_ICON_UP)
+        if (willCollide()) return;
+        if (heroIcon == HERO_ICON_UP) {
+            if (mapSegments[currentMapSegment]->movePlayerForward(playerY, playerX, heroIcon, playerY-1, playerX))
+                numItemsRemaining--;
             playerY--;
-        else if (heroIcon == Game::HERO_ICON_LEFT)
+        }
+        else if (heroIcon == HERO_ICON_LEFT) {
+            if (mapSegments[currentMapSegment]->movePlayerForward(playerY, playerX, heroIcon, playerY, playerX-1))
+                numItemsRemaining--;
             playerX--;
-        else if (heroIcon == Game::HERO_ICON_DOWN)
+        }
+        else if (heroIcon == HERO_ICON_DOWN) {
+            if (mapSegments[currentMapSegment]->movePlayerForward(playerY, playerX, heroIcon, playerY+1, playerX))
+                numItemsRemaining--;
             playerY++;
-        else
+        }
+        else {
+            if (mapSegments[currentMapSegment]->movePlayerForward(playerY, playerX, heroIcon, playerY, playerX+1))
+                numItemsRemaining--;
             playerX++;
-    }
-    std::cout << heroIcon << "\n";
+        }
+    } else return;
+    numMovesRemaining--;
     return;
 }
 
-void checkCollision() {
-    return;
+// Collisions against walls and buildings
+bool Game::willCollide() {
+    int newY = playerY, newX = playerX;
+    if (heroIcon == HERO_ICON_UP) { newY--; }
+    else if (heroIcon == HERO_ICON_LEFT) { newX--; }
+    else if (heroIcon == HERO_ICON_DOWN) { newY++; }
+    else { newX++; }
+
+    int msHeight = mapSegments[currentMapSegment]->getHeight();
+    int msWidth = mapSegments[currentMapSegment]->getWidth();
+    if (newY == 0 || newY == msHeight-1 || newX == 0 || newX == msWidth-1)
+        return true;
+    std::vector<Building*> buildings = mapSegments[currentMapSegment]->getBuildings();
+    for (size_t i = 0; i < buildings.size(); i++) {
+        if (buildings[i]->contains(newY, newX))
+            return true;
+    }
+    return false;
 }
 
 

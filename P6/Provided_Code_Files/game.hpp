@@ -36,7 +36,7 @@ private:  // private methods
      * Set up the 1D vector of strings that is then given to the draw()
      * method of an instance of a subclass of View.
      */
-    // void draw();
+    void draw();
 
     /**
      * Loop until the game is over. On each iteration, use the controller
@@ -54,6 +54,8 @@ private:  // private methods
      * being careful to not leave traces of information from previous levels. 
      */
     void loadLevel();
+
+    bool willCollide();
 
 private:
     static const int MIN_VIEW_HEIGHT;
@@ -81,12 +83,11 @@ private:
     int currentMapSegment;
     std::vector<MapSegment*> mapSegments; // mapSegments.size() == totalMapSegments
     int playerX, playerY;
-    int totalItems, numItemsFound;
+    int numItemsRemaining, numMovesRemaining;
     char heroIcon;
-    int maxMoves, numMovesPlayed;
 
     // Level specific information (need to reset each time when loading a level)
-    // totalMapSegments, playerX, playerY, totalItems, numItemsFound, heroIcon, maxMoves, numMoves
+    // currentMapSegment, mapSegments, playerX, playerY, numItemsRemaining, numMovesRemaining, heroIcon
 
 };
 

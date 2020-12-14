@@ -33,13 +33,15 @@ public:
      * Returns representation of this map segment as a vector of strings,
      * including any contained items and buildings.
      */
-    // std::vector<std::string> getAsLines() const;
+    std::vector<std::string> getAsLines() const;
 
     ~MapSegment();
     void addBuilding(int y, int x);
     std::vector<Building*> getBuildings();
     void addItem(int y, int x);
-    std::vector<Item*> getItems();
+    void addPortal(std::string wall);
+    void setPlayerDirection(int yPos, int xPos, char heroIcon);
+    bool movePlayerForward(int oldY, int oldX, char heroIcon, int newY, int newX);
 
 private:
     static char VERTICAL_BORDER_CHAR;
@@ -60,8 +62,10 @@ private:
     int mPortalY;
     int mPortalX;
 
-    std::vector<Building*> buildings;
-    std::vector<Item*> items;
+    std::vector<std::string> msAsLines;
+    std::vector<Building*> buildingsVector;
+    std::vector<Item*> itemsVector;
+
 };
 
 #endif // MAP_SEGMENT_HPP
