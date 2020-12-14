@@ -56,6 +56,10 @@ private:  // private methods
     void loadLevel();
 
     bool willCollide();
+    bool checkPortalCollision(int newY, int newX);
+    std::vector<int> findDestinationPortal(int sourceWall);
+    void portalChanges(char destWall);
+
 
 private:
     static const int MIN_VIEW_HEIGHT;
@@ -81,13 +85,11 @@ private:
     int totalLevels, currentLevel;
     std::vector<std::string> levelFiles;
     int currentMapSegment;
-    std::vector<MapSegment*> mapSegments; // mapSegments.size() == totalMapSegments
+    std::vector<MapSegment> mapSegments; // mapSegments.size() == totalMapSegments
     int playerX, playerY;
     int numItemsRemaining, numMovesRemaining;
     char heroIcon;
-
-    // Level specific information (need to reset each time when loading a level)
-    // currentMapSegment, mapSegments, playerX, playerY, numItemsRemaining, numMovesRemaining, heroIcon
+    std::vector<std::vector<int>> portalConnections;
 
 };
 

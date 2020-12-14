@@ -37,11 +37,13 @@ public:
 
     ~MapSegment();
     void addBuilding(int y, int x);
-    std::vector<Building*> getBuildings();
+    std::vector<Building> getBuildings();
     void addItem(int y, int x);
     void addPortal(std::string wall);
     void setPlayerDirection(int yPos, int xPos, char heroIcon);
     bool movePlayerForward(int oldY, int oldX, char heroIcon, int newY, int newX);
+    void removePlayer(int yPos, int xPos);
+    // void enterPortal(char wall, char heroIcon);
 
 private:
     static char VERTICAL_BORDER_CHAR;
@@ -63,8 +65,8 @@ private:
     int mPortalX;
 
     std::vector<std::string> msAsLines;
-    std::vector<Building*> buildingsVector;
-    std::vector<Item*> itemsVector;
+    std::vector<Building> buildingsVector;
+    std::vector<Item> itemsVector;
 
 };
 

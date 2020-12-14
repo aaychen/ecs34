@@ -26,12 +26,6 @@ MapSegment::MapSegment(int height, int width)
 
 // destructor
 MapSegment::~MapSegment() {
-    // for (size_t i = 0; i < buildingsVector.size(); i++) {
-    //     delete buildingsVector[i];
-    // }
-    // for (size_t i = 0; i < itemsVector.size(); i++) {
-    //     delete itemsVector[i];
-    // }
 }
 
 std::vector<std::string> MapSegment::getAsLines() const {
@@ -39,19 +33,19 @@ std::vector<std::string> MapSegment::getAsLines() const {
 }
 
 void MapSegment::addBuilding(int y, int x) {
-    Building* b = new Building(y, x);
-    b->drawIn(msAsLines);
+    Building b = Building(y, x);
+    b.drawIn(msAsLines);
     buildingsVector.push_back(b);
     return;
 }
 
-std::vector<Building*> MapSegment::getBuildings() {
+std::vector<Building> MapSegment::getBuildings() {
     return buildingsVector;
 }
 
 void MapSegment::addItem(int y, int x) {
-    Item* i = new Item(y, x);
-    i->drawIn(msAsLines);
+    Item i = Item(y, x);
+    i.drawIn(msAsLines);
     itemsVector.push_back(i);
     return;
 }
@@ -82,3 +76,20 @@ bool MapSegment::movePlayerForward(int oldY, int oldX, char heroIcon, int newY, 
     msAsLines[newY][newX] = heroIcon;
     return foundItem;
 }
+
+void MapSegment::removePlayer(int yPos, int xPos) {
+    msAsLines[yPos][xPos] = ' ';
+    return;
+}
+
+// void MapSegment::enterPortal(int yPos, int xPos, char heroIcon) {
+    // if (wall == 'u') {
+    //     msAsLines[1][mPortalX] = heroIcon;
+    // } else if (wall == 'd') {
+    //     msAsLines[mHeight-2][mPortalX] = heroIcon; // mHeight-1 is where portal is
+    // } else if (wall == 'r') {
+    //     msAsLines[mPortalY][mWidth-2] = heroIcon;
+    // } else {
+    //     msAsLines[mPortalY][1] = heroIcon;
+    // }
+// }

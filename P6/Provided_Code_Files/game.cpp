@@ -67,10 +67,6 @@ Game::~Game()
     // allocated in the ctor (constructor).
     delete mController;
     delete mView;
-    for (size_t i = 0; i < mapSegments.size(); i++) {
-        // mapSegments[i]->~MapSegment();
-        delete mapSegments[i];
-    }
 }
 
 void Game::run()
@@ -87,26 +83,27 @@ void Game::run()
                 break;
             }
             loadLevel();
-            passLevel = false; // WHEN TO SET TO TRUE?
+            passLevel = false;
         }
         std::cout << "Level: " << currentLevel << std::endl;
         std::cout << "Items remaining: " << numItemsRemaining << std::endl;
         std::cout << "Moves remaining: " << numMovesRemaining << std::endl;
         draw();
+        if (numItemsRemaining == 0 && currentLevel == totalLevels) {
+            endMessage = "You won the game.";
+            break;
+        }
         user_in = mController->getInput();
         if (user_in == Command::Quit) {
             endMessage = "You quit the game.";
             break;
         }
         update(user_in);
-        if (numItemsRemaining == 0) {
-            if (currentLevel != totalLevels) {
-                passLevel = true;
-            } else {
-                endMessage = "You won the game.";
-                break;
-            }
-        } else if (numMovesRemaining == 0) {
+        if (numItemsRemaining == 0 && currentLevel != totalLevels) {
+            passLevel = true;
+            continue;
+        }
+        if (numMovesRemaining == 0) {
             endMessage = "You lost the game.";
             break;
         }
@@ -134,32 +131,38 @@ void Game::loadLevel() {
     while (infile >> tempCode) {
         if (tempCode == 'M') {
             infile >> tempY >> tempX;
-            MapSegment* ms = new MapSegment(tempY, tempX); // create MapSegment object
+            MapSegment ms = MapSegment(tempY, tempX); // create MapSegment object
             mapSegments.push_back(ms);
         } else if (tempCode == 'B') {
             infile >> tempMapSegID >> tempY >> tempX;
-            mapSegments[tempMapSegID]->addBuilding(tempY, tempX); // add building to mapSegments[id]
+            mapSegments[tempMapSegID].addBuilding(tempY, tempX); // add building to mapSegments[id]
         } else if (tempCode == 'I') {
             infile >> tempMapSegID >> tempY >> tempX;
-            mapSegments[tempMapSegID]->addItem(tempY, tempX); // add item to mapSegments[id]
+            mapSegments[tempMapSegID].addItem(tempY, tempX); // add item to mapSegments[id]
             numItemsRemaining++;
         } else if (tempCode == 'P') {
             // line format: 'P' [seg1_ID] [wall] [seg2_ID] [wall]
             int sourceID, destID;
             std::string sourceWall, destWall;
             infile >> sourceID >> sourceWall >> destID >> destWall;
-            mapSegments[sourceID]->addPortal(sourceWall);
-            mapSegments[destID]->addPortal(destWall);
+            mapSegments[sourceID].addPortal(sourceWall);
+            mapSegments[destID].addPortal(destWall);
+            std::vector<int> portal;
+            portal.push_back(sourceID);
+            portal.push_back(tolower(sourceWall[0]));
+            portal.push_back(destID);
+            portal.push_back(tolower(destWall[0]));
+            portalConnections.push_back(portal);
         } else if (tempCode == 'N') {
             infile >> numMovesRemaining;
         }
     }
-    mapSegments[currentMapSegment]->setPlayerDirection(playerY, playerX, heroIcon);
+    mapSegments[currentMapSegment].setPlayerDirection(playerY, playerX, heroIcon);
     return;
 }
 
 void Game::draw() {
-    std::vector<std::string> msAsLines = mapSegments[currentMapSegment]->getAsLines();
+    std::vector<std::string> msAsLines = mapSegments[currentMapSegment].getAsLines();
     for (size_t row = 0; row < msAsLines.size(); row++) {
         std::cout << msAsLines[row] << std::endl;
     }
@@ -173,34 +176,34 @@ void Game::update(Command move) {
         else if (heroIcon == HERO_ICON_LEFT) heroIcon = HERO_ICON_DOWN;
         else if (heroIcon == HERO_ICON_DOWN) heroIcon = HERO_ICON_RIGHT;
         else heroIcon = HERO_ICON_UP;
-        mapSegments[currentMapSegment]->setPlayerDirection(playerY, playerX, heroIcon);
+        mapSegments[currentMapSegment].setPlayerDirection(playerY, playerX, heroIcon);
     }
     else if (move == Command::Right) { // clockwise rotation
         if (heroIcon == HERO_ICON_UP) heroIcon = HERO_ICON_RIGHT;
         else if (heroIcon == HERO_ICON_RIGHT) heroIcon = HERO_ICON_DOWN;
         else if (heroIcon == HERO_ICON_DOWN) heroIcon = HERO_ICON_LEFT;
         else heroIcon = HERO_ICON_UP;
-        mapSegments[currentMapSegment]->setPlayerDirection(playerY, playerX, heroIcon);
+        mapSegments[currentMapSegment].setPlayerDirection(playerY, playerX, heroIcon);
     }
     else if (move == Command::Forward) {
         if (willCollide()) return;
         if (heroIcon == HERO_ICON_UP) {
-            if (mapSegments[currentMapSegment]->movePlayerForward(playerY, playerX, heroIcon, playerY-1, playerX))
+            if (mapSegments[currentMapSegment].movePlayerForward(playerY, playerX, heroIcon, playerY-1, playerX))
                 numItemsRemaining--;
             playerY--;
         }
         else if (heroIcon == HERO_ICON_LEFT) {
-            if (mapSegments[currentMapSegment]->movePlayerForward(playerY, playerX, heroIcon, playerY, playerX-1))
+            if (mapSegments[currentMapSegment].movePlayerForward(playerY, playerX, heroIcon, playerY, playerX-1))
                 numItemsRemaining--;
             playerX--;
         }
         else if (heroIcon == HERO_ICON_DOWN) {
-            if (mapSegments[currentMapSegment]->movePlayerForward(playerY, playerX, heroIcon, playerY+1, playerX))
+            if (mapSegments[currentMapSegment].movePlayerForward(playerY, playerX, heroIcon, playerY+1, playerX))
                 numItemsRemaining--;
             playerY++;
         }
         else {
-            if (mapSegments[currentMapSegment]->movePlayerForward(playerY, playerX, heroIcon, playerY, playerX+1))
+            if (mapSegments[currentMapSegment].movePlayerForward(playerY, playerX, heroIcon, playerY, playerX+1))
                 numItemsRemaining--;
             playerX++;
         }
@@ -209,7 +212,7 @@ void Game::update(Command move) {
     return;
 }
 
-// Collisions against walls and buildings
+// Collisions against walls, buildings, portals
 bool Game::willCollide() {
     int newY = playerY, newX = playerX;
     if (heroIcon == HERO_ICON_UP) { newY--; }
@@ -217,16 +220,95 @@ bool Game::willCollide() {
     else if (heroIcon == HERO_ICON_DOWN) { newY++; }
     else { newX++; }
 
-    int msHeight = mapSegments[currentMapSegment]->getHeight();
-    int msWidth = mapSegments[currentMapSegment]->getWidth();
+    // Portal
+    if (checkPortalCollision(newY, newX)) {
+        return true;
+    }
+
+    // Wall
+    int msHeight = mapSegments[currentMapSegment].getHeight();
+    int msWidth = mapSegments[currentMapSegment].getWidth();    
     if (newY == 0 || newY == msHeight-1 || newX == 0 || newX == msWidth-1)
         return true;
-    std::vector<Building*> buildings = mapSegments[currentMapSegment]->getBuildings();
+
+    // Building
+    std::vector<Building> buildings = mapSegments[currentMapSegment].getBuildings();
     for (size_t i = 0; i < buildings.size(); i++) {
-        if (buildings[i]->contains(newY, newX))
+        if (buildings[i].contains(newY, newX))
             return true;
     }
     return false;
 }
 
+bool Game::checkPortalCollision(int newY, int newX) {
+    std::vector<int> destPortal;
+    bool collision = false;
+    for (size_t i = 0; i < portalConnections.size(); i++) {
+        if (newX == mapSegments[currentMapSegment].getPortalX()) {
+            if (newY == 0) { // up
+                destPortal = findDestinationPortal('u');
+                collision = true;
+                break;
+            } else if (newY == mapSegments[currentMapSegment].getHeight()-1){ // down
+                destPortal = findDestinationPortal('d');
+                collision = true;
+                break;
+            }
+        } else if (newY == mapSegments[currentMapSegment].getPortalY()) {
+            if (newX == 0) { // left
+                destPortal = findDestinationPortal('l');
+                collision = true;
+                break;
+            } else if (newX == mapSegments[currentMapSegment].getWidth()-1) { // right
+                destPortal = findDestinationPortal('r');
+                collision = true;
+                break;
+            }
+        }
+    }
+    if (collision) {
+        mapSegments[currentMapSegment].removePlayer(playerY, playerX);
+        currentMapSegment = destPortal[0];
+        portalChanges(destPortal[1]);
+        mapSegments[currentMapSegment].setPlayerDirection(playerY, playerX, heroIcon);
+        numMovesRemaining--;
+        return true;
+    }
+    return false;
+}
+
+std::vector<int> Game::findDestinationPortal(int sourceWall) {
+    std::vector<int> destPortal;
+    for (size_t i = 0; i < portalConnections.size(); i++) {
+        std::vector<int> tempPC = portalConnections[i];
+        if (tempPC[0] == currentMapSegment && tempPC[1] == sourceWall) {
+                destPortal.push_back(tempPC[2]);
+                destPortal.push_back(tempPC[3]);
+        } else if (tempPC[2] == currentMapSegment && tempPC[3] == sourceWall) {
+                destPortal.push_back(tempPC[0]);
+                destPortal.push_back(tempPC[1]);
+        }
+    }
+    return destPortal;
+}
+
+void Game::portalChanges(char destWall) {
+    if (destWall == 'u') {
+        heroIcon = HERO_ICON_DOWN;
+        playerY = 1;
+        playerX = mapSegments[currentMapSegment].getPortalX();
+    } else if (destWall == 'd') {
+        heroIcon = HERO_ICON_UP;
+        playerY = mapSegments[currentMapSegment].getHeight() - 2;
+        playerX = mapSegments[currentMapSegment].getPortalX();
+    } else if (destWall == 'r') {
+        heroIcon = HERO_ICON_LEFT;
+        playerY = mapSegments[currentMapSegment].getPortalY();
+        playerX = mapSegments[currentMapSegment].getWidth() - 2;
+    } else {
+        heroIcon = HERO_ICON_RIGHT;
+        playerY = mapSegments[currentMapSegment].getPortalY();
+        playerX = 1;
+    }
+}
 
