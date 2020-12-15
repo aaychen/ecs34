@@ -1,5 +1,7 @@
 #include "curses_view.hpp"
 
+#include <iostream>
+
 /**
  * Side note: This class should probably be what is known as a singleton
  * class, i.e. a class that uses some setup (e.g. a static variable) to
@@ -22,5 +24,5 @@ CursesView::~CursesView()
 void CursesView::draw(const std::vector<std::string>& lines)
 {
    // TODO: Implement.
-
+   
 }

@@ -24,10 +24,6 @@ MapSegment::MapSegment(int height, int width)
     }
 }
 
-// destructor
-MapSegment::~MapSegment() {
-}
-
 std::vector<std::string> MapSegment::getAsLines() const {
     return msAsLines;
 }
@@ -46,7 +42,6 @@ std::vector<Building> MapSegment::getBuildings() {
 void MapSegment::addItem(int y, int x) {
     Item i = Item(y, x);
     i.drawIn(msAsLines);
-    itemsVector.push_back(i);
     return;
 }
 
@@ -73,7 +68,7 @@ bool MapSegment::movePlayerForward(int oldY, int oldX, char heroIcon, int newY, 
     msAsLines[oldY][oldX] = ' ';
     if (msAsLines[newY][newX] == '$') 
         foundItem = true;
-    msAsLines[newY][newX] = heroIcon;
+    setPlayerDirection(newY, newX, heroIcon);
     return foundItem;
 }
 
@@ -82,14 +77,3 @@ void MapSegment::removePlayer(int yPos, int xPos) {
     return;
 }
 
-// void MapSegment::enterPortal(int yPos, int xPos, char heroIcon) {
-    // if (wall == 'u') {
-    //     msAsLines[1][mPortalX] = heroIcon;
-    // } else if (wall == 'd') {
-    //     msAsLines[mHeight-2][mPortalX] = heroIcon; // mHeight-1 is where portal is
-    // } else if (wall == 'r') {
-    //     msAsLines[mPortalY][mWidth-2] = heroIcon;
-    // } else {
-    //     msAsLines[mPortalY][1] = heroIcon;
-    // }
-// }

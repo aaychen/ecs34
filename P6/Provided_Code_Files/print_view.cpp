@@ -18,16 +18,22 @@ PrintView::~PrintView()
 void PrintView::draw(const std::vector<std::string>& lines)
 {
     // TODO: Implement.
-    // lines is everything inside asterisks border
-    for (int row = 0; row < mHeight + 2; row++) {
-        for (int col = 0; col < mWidth + 2; col++) {
-            if (row == 0 || row == mHeight + 1 || col == 0 || col == mWidth + 1) {
-                std::cout << "*";
-            }
-            else {
-                std::cout << "~";
-            }
-        }
-        std::cout << std::endl;
+    // for (int row = -1; row < mHeight+1; row++) {
+    //     for (int col = -1; col < mWidth+1; col++) {
+    //         if (row == -1 || row == mHeight || col == -1 || col == mWidth) {
+    //             std::cout << '*';
+    //         }
+    //         else {
+    //             std::cout << lines[row][col];
+    //         }
+    //     }
+    //     std::cout << std::endl;
+    // }
+    std::string border = std::string(mWidth+2, '*');
+    std::cout << border << std::endl;
+    for (size_t i = 0; i < lines.size(); i++) {
+        std::cout << "*" << lines[i] << "*" << std::endl;
     }
+    std::cout << border << std::endl;
+    return;
 }

@@ -29,13 +29,15 @@ public:
     int getPortalX() const { return mPortalX; }
     int getPortalY() const { return mPortalY; }
 
+    // int getViewY() const { return viewY; }
+    // int getViewX() const { return viewX; }
+
     /**
      * Returns representation of this map segment as a vector of strings,
      * including any contained items and buildings.
      */
     std::vector<std::string> getAsLines() const;
 
-    ~MapSegment();
     void addBuilding(int y, int x);
     std::vector<Building> getBuildings();
     void addItem(int y, int x);
@@ -43,7 +45,6 @@ public:
     void setPlayerDirection(int yPos, int xPos, char heroIcon);
     bool movePlayerForward(int oldY, int oldX, char heroIcon, int newY, int newX);
     void removePlayer(int yPos, int xPos);
-    // void enterPortal(char wall, char heroIcon);
 
 private:
     static char VERTICAL_BORDER_CHAR;
@@ -66,7 +67,6 @@ private:
 
     std::vector<std::string> msAsLines;
     std::vector<Building> buildingsVector;
-    std::vector<Item> itemsVector;
 
 };
 

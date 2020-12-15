@@ -163,10 +163,47 @@ void Game::loadLevel() {
 
 void Game::draw() {
     std::vector<std::string> msAsLines = mapSegments[currentMapSegment].getAsLines();
-    for (size_t row = 0; row < msAsLines.size(); row++) {
-        std::cout << msAsLines[row] << std::endl;
+    // for (size_t row = 0; row < msAsLines.size(); row++) {
+    //     std::cout << msAsLines[row] << std::endl;
+    // }    
+    // // mView->draw(msAsLines);
+    // std::cout << playerY << ", " << playerX << std::endl;
+
+    int mapSegHeight = mapSegments[currentMapSegment].getHeight();
+    int mapSegWidth = mapSegments[currentMapSegment].getWidth();
+
+    int midY, midX;
+    if (mView->getHeight() % 2 == 0) {
+        midY = mView->getHeight() / 2;
+    } else {
+        midY = mView->getHeight() / 2 + 1;
     }
-    // mView->draw(msAsLines);
+    if (mView->getWidth() % 2 == 0) {
+        midX = mView->getWidth() / 2;
+    } else {
+        midX = mView->getWidth() / 2 + 1;
+    }
+
+    std::vector<std::string> screen = std::vector<std::string>(mView->getHeight());
+    for (size_t i = 0; i < screen.size(); i++) {
+        screen[i] = std::string(mView->getWidth(), '~');
+    } 
+    screen[midY][midX] = heroIcon;
+    // (playerY, playerX) == player position on map segment
+    // -1 to account for indexing starting at (0,0)
+    int msTopLeftY = midY - playerY - 1;
+    int msTopLeftX = midX - playerX - 1;
+    for (int row = 0; row < (int)screen.size(); row++) {
+        for (int col = 0; col < (int)screen[row].size(); col++) {
+            // -1 to account for indexing starting at (0,0)
+            if (msTopLeftY <= row && row <= msTopLeftY + mapSegHeight - 1) {
+                if (msTopLeftX <= col && col <= msTopLeftX + mapSegWidth - 1) {
+                    screen[row][col] = msAsLines[row - msTopLeftY][col - msTopLeftX];
+                }
+            }
+        }
+    }
+    mView->draw(screen);
     return;
 }
 
@@ -177,6 +214,7 @@ void Game::update(Command move) {
         else if (heroIcon == HERO_ICON_DOWN) heroIcon = HERO_ICON_RIGHT;
         else heroIcon = HERO_ICON_UP;
         mapSegments[currentMapSegment].setPlayerDirection(playerY, playerX, heroIcon);
+        return;
     }
     else if (move == Command::Right) { // clockwise rotation
         if (heroIcon == HERO_ICON_UP) heroIcon = HERO_ICON_RIGHT;
@@ -184,6 +222,7 @@ void Game::update(Command move) {
         else if (heroIcon == HERO_ICON_DOWN) heroIcon = HERO_ICON_LEFT;
         else heroIcon = HERO_ICON_UP;
         mapSegments[currentMapSegment].setPlayerDirection(playerY, playerX, heroIcon);
+        return;
     }
     else if (move == Command::Forward) {
         if (willCollide()) return;
@@ -243,32 +282,38 @@ bool Game::willCollide() {
 bool Game::checkPortalCollision(int newY, int newX) {
     std::vector<int> destPortal;
     bool collision = false;
+    std::vector<std::string> msAsLines = mapSegments[currentMapSegment].getAsLines();
     for (size_t i = 0; i < portalConnections.size(); i++) {
-        if (newX == mapSegments[currentMapSegment].getPortalX()) {
+        if (newX == mapSegments[currentMapSegment].getPortalX() && msAsLines[newY][newX] == '@') {
             if (newY == 0) { // up
                 destPortal = findDestinationPortal('u');
                 collision = true;
+                std::cout << __LINE__ << std::endl;
                 break;
             } else if (newY == mapSegments[currentMapSegment].getHeight()-1){ // down
                 destPortal = findDestinationPortal('d');
                 collision = true;
+                std::cout << __LINE__ << std::endl;
                 break;
             }
-        } else if (newY == mapSegments[currentMapSegment].getPortalY()) {
+        } else if (newY == mapSegments[currentMapSegment].getPortalY() && msAsLines[newY][newX] == '@') {
             if (newX == 0) { // left
                 destPortal = findDestinationPortal('l');
                 collision = true;
+                std::cout << __LINE__ << std::endl;
                 break;
             } else if (newX == mapSegments[currentMapSegment].getWidth()-1) { // right
                 destPortal = findDestinationPortal('r');
                 collision = true;
+                std::cout << __LINE__ << std::endl;
                 break;
             }
         }
     }
     if (collision) {
         mapSegments[currentMapSegment].removePlayer(playerY, playerX);
-        currentMapSegment = destPortal[0];
+        std::cout << __LINE__ << ": " << destPortal.size() << std::endl;
+        currentMapSegment = destPortal[0]; // SEGFAULT
         portalChanges(destPortal[1]);
         mapSegments[currentMapSegment].setPlayerDirection(playerY, playerX, heroIcon);
         numMovesRemaining--;
