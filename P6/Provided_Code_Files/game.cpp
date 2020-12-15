@@ -7,7 +7,6 @@
 #include <iostream>
 #include <fstream>
 
-// NOTE: NO INPUT VALIDATION REQUIRED
 // These should not have been here in the first place... 
 // #define INVALID_GAME_FILE_MSG "Invalid game input file"
 // #define INVALID_LEVEL_FILE_MSG "Invalid level input file"
@@ -114,6 +113,7 @@ void Game::run()
 
 void Game::loadLevel() {
     mapSegments.clear();
+    portalConnections.clear();
     std::string levelFileName = levelFiles[currentLevel - 1];
     std::basic_ifstream<char> infile{levelFileName}; // initialize istream to open filename
     std::string buf;
@@ -141,7 +141,7 @@ void Game::loadLevel() {
             mapSegments[tempMapSegID].addItem(tempY, tempX); // add item to mapSegments[id]
             numItemsRemaining++;
         } else if (tempCode == 'P') {
-            // line format: 'P' [seg1_ID] [wall] [seg2_ID] [wall]
+            // line format: 'P' [sourceID] [sourceWall] [destID] [destWall]
             int sourceID, destID;
             std::string sourceWall, destWall;
             infile >> sourceID >> sourceWall >> destID >> destWall;
@@ -288,32 +288,27 @@ bool Game::checkPortalCollision(int newY, int newX) {
             if (newY == 0) { // up
                 destPortal = findDestinationPortal('u');
                 collision = true;
-                std::cout << __LINE__ << std::endl;
                 break;
             } else if (newY == mapSegments[currentMapSegment].getHeight()-1){ // down
                 destPortal = findDestinationPortal('d');
                 collision = true;
-                std::cout << __LINE__ << std::endl;
                 break;
             }
         } else if (newY == mapSegments[currentMapSegment].getPortalY() && msAsLines[newY][newX] == '@') {
             if (newX == 0) { // left
                 destPortal = findDestinationPortal('l');
                 collision = true;
-                std::cout << __LINE__ << std::endl;
                 break;
             } else if (newX == mapSegments[currentMapSegment].getWidth()-1) { // right
                 destPortal = findDestinationPortal('r');
                 collision = true;
-                std::cout << __LINE__ << std::endl;
                 break;
             }
         }
     }
     if (collision) {
         mapSegments[currentMapSegment].removePlayer(playerY, playerX);
-        std::cout << __LINE__ << ": " << destPortal.size() << std::endl;
-        currentMapSegment = destPortal[0]; // SEGFAULT
+        currentMapSegment = destPortal[0];
         portalChanges(destPortal[1]);
         mapSegments[currentMapSegment].setPlayerDirection(playerY, playerX, heroIcon);
         numMovesRemaining--;

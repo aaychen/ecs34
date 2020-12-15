@@ -66,8 +66,9 @@ void MapSegment::setPlayerDirection(int yPos, int xPos, char heroIcon) {
 bool MapSegment::movePlayerForward(int oldY, int oldX, char heroIcon, int newY, int newX) {
     bool foundItem = false;
     msAsLines[oldY][oldX] = ' ';
-    if (msAsLines[newY][newX] == '$') 
+    if (msAsLines[newY][newX] == '$') {
         foundItem = true;
+    }
     setPlayerDirection(newY, newX, heroIcon);
     return foundItem;
 }
