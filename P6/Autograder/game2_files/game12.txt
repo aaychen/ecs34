@@ -1,0 +1,6 @@
+20 20
+4
+foo/game12_level1.txt
+../game12_level2.txt
+../game_files/game12_level3.txt
+game12_level4.txt

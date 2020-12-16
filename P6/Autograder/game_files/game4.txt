@@ -1,0 +1,5 @@
+16 16
+3
+game3_a.txt
+game3_c.txt
+game3_d.txt

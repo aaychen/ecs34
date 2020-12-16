@@ -1,0 +1,23 @@
+4
+8 2
+down
+M 30 50
+M 30 50
+M 30 50
+M 30 50
+M 10 16
+M 30 50
+B 4 3 5
+I 4 8 1
+I 0 5 5
+I 4 7 1
+I 4 7 2
+I 4 7 3
+I 5 10 10
+I 4 8 3
+P 0 right 1 left
+P 1 right 2 left
+P 2 right 3 left
+P 3 right 4 up
+P 4 left 5 right
+N 10000
