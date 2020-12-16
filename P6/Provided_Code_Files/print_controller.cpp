@@ -21,7 +21,4 @@ Command PrintController::getInput()
     else if (user_in == 'q')
         return Command::Quit;
     return Command::Invalid;
-    
-    // To prevent a compiler error in the starter files...
-    // return Command::Invalid;
 }

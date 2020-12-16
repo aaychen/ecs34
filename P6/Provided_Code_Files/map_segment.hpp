@@ -38,12 +38,47 @@ public:
      */
     std::vector<std::string> getAsLines() const;
 
+    /**
+     * Adds a building at coordinates (y,x) on this map segment.
+     */
     void addBuilding(int y, int x);
+
+    /**
+     * Returns a list of buildings that are on this map segment.
+     */
     std::vector<Building> getBuildings();
+
+    /**
+     * Adds an item at coordinates (y,x) on this map segment.
+     */
     void addItem(int y, int x);
+
+    /**
+     * Adds a portal at the specified wall location.
+     */
     void addPortal(std::string wall);
+
+    /**
+     * Changes player direction at coordinates (yPos,xPos)
+     * @param heroIcon Player's new orientation
+     */
     void setPlayerDirection(int yPos, int xPos, char heroIcon);
+
+    /**
+     * Moves player forward and collects item if there is any.
+     * @param oldY Old row position of player
+     * @param oldX Old column position of player
+     * @param heroIcon Player's orientation
+     * @param newY Row position of player if move forward
+     * @param newX Column position of player if move forward
+     * @return true if player has reached an item; false otherwise
+     */
     bool movePlayerForward(int oldY, int oldX, char heroIcon, int newY, int newX);
+
+    /**
+     * Removes player from coordinates (y,x). Used when updating player position on 
+     * this map segment.
+     */
     void removePlayer(int yPos, int xPos);
 
 private:
@@ -65,7 +100,11 @@ private:
     int mPortalY;
     int mPortalX;
 
+    /**
+     * Lines representation of map segment
+     */
     std::vector<std::string> msAsLines;
+
     std::vector<Building> buildingsVector;
 
 };

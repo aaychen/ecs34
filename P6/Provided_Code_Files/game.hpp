@@ -55,10 +55,39 @@ private:  // private methods
      */
     void loadLevel();
 
+    /**
+     * Checks if the player will collide with portals, walls, or buildings if 
+     * they move forward.
+     * @return true if there is a collision; false otherwise
+     */
     bool willCollide();
+    
+    /**
+     * Specifically checks for portal collisions.
+     * @param newY Player's row position in the map segment if move forward
+     * @param newX Player's column position in the map segment if move forward
+     * @return true if will "collide" with a portal; false otherwise
+     */
     bool checkPortalCollision(int newY, int newX);
+
+    /**
+     * Finds the connecting destination portal.
+     * @param sourceWall The wall that the source portal is located at
+     * @return map segment ID and wall location of destination portal
+     */
     std::vector<int> findDestinationPortal(int sourceWall);
-    void portalChanges(char destWall);
+
+    /**
+     * Updates game such that player has passed through a portal
+     * @param destWall wall location of destination portal
+     */
+    void portalChange(char destWall);
+
+    /**
+     * Prints the current level, number of items remaining, and number of 
+     * moves remaining.
+     */
+    void printGameStatus();
 
 
 private:

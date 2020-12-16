@@ -1,7 +1,5 @@
 #include "map_segment.hpp"
 
-#include <iostream> // testing purposes
-
 char MapSegment::VERTICAL_BORDER_CHAR = '|';
 char MapSegment::HORIZONTAL_BORDER_CHAR = '=';
 char MapSegment::PORTAL_CHAR = '@';

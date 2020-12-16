@@ -18,6 +18,10 @@ public:
 
     int getY() const { return mY; }
     int getX() const { return mX; }
+
+    /**
+     * Draws self onto the given board.
+     */
     void drawIn(std::vector<std::string>& board) const;
 
     static char ICON;

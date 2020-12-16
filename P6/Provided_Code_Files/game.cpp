@@ -84,9 +84,7 @@ void Game::run()
             loadLevel();
             passLevel = false;
         }
-        std::cout << "Level: " << currentLevel << std::endl;
-        std::cout << "Items remaining: " << numItemsRemaining << std::endl;
-        std::cout << "Moves remaining: " << numMovesRemaining << std::endl;
+        printGameStatus();
         draw();
         if (numItemsRemaining == 0 && currentLevel == totalLevels) {
             endMessage = "You won the game.";
@@ -96,6 +94,9 @@ void Game::run()
         if (user_in == Command::Quit) {
             endMessage = "You quit the game.";
             break;
+        }
+        if (mInterfaceType == InterfaceType::Curses) {
+            clear();
         }
         update(user_in);
         if (numItemsRemaining == 0 && currentLevel != totalLevels) {
@@ -107,7 +108,31 @@ void Game::run()
             break;
         }
     }
-    std::cout << endMessage << std::endl;
+    if (mInterfaceType == InterfaceType::Curses) {
+        clear();
+        mvaddstr(0, 0, endMessage.c_str());
+        std::string anyKeyMessage = "Press any key to exit.";
+        mvaddstr(1, 0, anyKeyMessage.c_str());
+        getch();
+    } else {
+        std::cout << endMessage << std::endl;
+    }
+    return;
+}
+
+void Game::printGameStatus() {
+    std::string levelDescription = "Level: " + std::to_string(currentLevel);
+    std::string itemsDescription = "Items remaining: " + std::to_string(numItemsRemaining);
+    std::string movesDescription = "Moves remaining: " + std::to_string(numMovesRemaining);
+    if (mInterfaceType == InterfaceType::Print) {
+        std::cout << levelDescription << std::endl;
+        std::cout << itemsDescription << std::endl;
+        std::cout << movesDescription << std::endl;
+    } else {
+        mvaddstr(0, 0, levelDescription.c_str());
+        mvaddstr(1, 0, itemsDescription.c_str());
+        mvaddstr(2, 0, movesDescription.c_str());
+    }
     return;
 }
 
@@ -163,11 +188,6 @@ void Game::loadLevel() {
 
 void Game::draw() {
     std::vector<std::string> msAsLines = mapSegments[currentMapSegment].getAsLines();
-    // for (size_t row = 0; row < msAsLines.size(); row++) {
-    //     std::cout << msAsLines[row] << std::endl;
-    // }    
-    // // mView->draw(msAsLines);
-    // std::cout << playerY << ", " << playerX << std::endl;
 
     int mapSegHeight = mapSegments[currentMapSegment].getHeight();
     int mapSegWidth = mapSegments[currentMapSegment].getWidth();
@@ -309,7 +329,7 @@ bool Game::checkPortalCollision(int newY, int newX) {
     if (collision) {
         mapSegments[currentMapSegment].removePlayer(playerY, playerX);
         currentMapSegment = destPortal[0];
-        portalChanges(destPortal[1]);
+        portalChange(destPortal[1]);
         mapSegments[currentMapSegment].setPlayerDirection(playerY, playerX, heroIcon);
         numMovesRemaining--;
         return true;
@@ -332,7 +352,7 @@ std::vector<int> Game::findDestinationPortal(int sourceWall) {
     return destPortal;
 }
 
-void Game::portalChanges(char destWall) {
+void Game::portalChange(char destWall) {
     if (destWall == 'u') {
         heroIcon = HERO_ICON_DOWN;
         playerY = 1;
