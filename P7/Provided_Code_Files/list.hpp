@@ -126,7 +126,15 @@ public:
     /**
      * Prints the contents of this list.
      */
-    friend std::ostream& operator<<(std::ostream& os, const List<T>& list);
+    friend std::ostream& operator<<(std::ostream& os, const List<T>& list) {
+        Node<T>* temp = list.head;
+        while (temp != nullptr) {
+            os << temp->getData() << " ";
+            temp = temp->getNext();
+        }
+        os << std::endl;
+        return os;
+    }
 
 private:
     // TODO: Any helper methods that you add should be declared or defined
@@ -134,7 +142,9 @@ private:
 
 private:
     // TODO: Insert member variables here.
-
+    Node<T>* head;
+    Node<T>* tail;
+    unsigned numItems;
 };
 
 #include "list.inl"
