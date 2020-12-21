@@ -52,6 +52,9 @@ List<T>::~List() {
 
 template<typename T>
 List<T>& List<T>::operator=(const List<T>& other) {
+    if (this == &other) // To pass hidden case #29, must prevent "self-assignment"
+        return *this;
+
     int origNumItems = this->length();
     Node<T>* temp = other.head;
     while (temp != nullptr) {
